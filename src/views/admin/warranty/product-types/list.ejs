@@ -1,0 +1,505 @@
+<div class="warranty-product-type-page pt-list-view">
+  <div class="pt-list-toolbar">
+    <h1 class="pt-list-title">Loại sản phẩm</h1>
+    <div class="pt-list-toolbar-actions">
+      <button type="button" class="btn btn-primary btn-sm text-uppercase fw-semibold px-3" id="btnPtAdd">Thêm loại</button>
+    </div>
+  </div>
+
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="alert alert-info alert-dismissible fade show py-2 mb-3" role="alert">
+      <%= flash %>
+      <button type="button" class="btn-close" data-coreui-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <div class="pt-bh-policy card border-0 shadow-sm mb-3">
+    <div class="card-body py-3 px-3">
+      <div class="d-flex flex-wrap align-items-start gap-3">
+        <div class="flex-grow-1 small">
+          <div class="fw-semibold text-body mb-1">Cách áp dụng bảo hành trên thiết bị</div>
+          <p class="mb-2 text-body-secondary lh-sm">
+            Chọn <strong>theo loại (DB)</strong> hoặc <strong>nhập tay</strong> ngay ở cột <strong>«BH trên thiết bị»</strong> trong bảng, rồi bấm <strong>Cập nhật</strong> — lưu riêng, không cần mở form Sửa loại.
+          </p>
+          <p class="mb-0 text-body-secondary lh-sm">
+            <strong>Theo loại:</strong> hạn BH = số ngày/tháng của loại, từ ngày mua / kích hoạt. <strong>Nhập tay:</strong> khi đăng ký thiết bị nhập ngày bắt đầu — hết hạn.
+          </p>
+        </div>
+        <div class="d-flex flex-column gap-2 align-items-stretch">
+          <button type="button" class="btn btn-sm btn-primary text-nowrap" id="btnPtAddFromHint">Thêm loại</button>
+          <a class="btn btn-sm btn-outline-primary text-nowrap" href="/admin/warranty/products">Mở đăng ký thiết bị</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-list-card">
+    <div class="table-responsive pt-table-wrap">
+      <table class="table pt-table mb-0">
+        <thead>
+          <tr>
+            <th class="pt-col-code">Mã</th>
+            <th class="pt-col-slug">Slug <span class="pt-th-sub">(từ tên)</span></th>
+            <th class="pt-col-name">Tên</th>
+            <th class="pt-col-order text-center">Thứ tự</th>
+            <th class="pt-col-days text-center">BH <span class="pt-th-sub">(ngày)</span></th>
+            <th class="text-center">BH trên thiết bị <span class="pt-th-sub">(chọn + Cập nhật)</span></th>
+            <th class="pt-col-status text-center">Trạng thái KH</th>
+            <th class="pt-col-actions text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!items || !items.length) { %>
+            <tr>
+              <td colspan="8" class="pt-empty">Chưa có loại nào — bấm <strong>Thêm loại</strong>.</td>
+            </tr>
+          <% } %>
+          <% (items || []).forEach(function (row) { %>
+            <% var bhDays = (row.warrantyDefaultDays != null && row.warrantyDefaultDays >= 1) ? row.warrantyDefaultDays : (row.warrantyMonths || 12) * 30; %>
+            <% var bhExact = (row.warrantyDefaultDays != null && row.warrantyDefaultDays >= 1); %>
+            <tr class="pt-row" data-id="<%= row._id %>">
+              <td class="pt-td-code"><code><%= row.code ? row.code : '—' %></code></td>
+              <td class="pt-td-slug"><code><%= row.slug %></code></td>
+              <td class="pt-td-name">
+                <button type="button" class="btn btn-link btn-sm pt-name-btn p-0" data-edit-id="<%= row._id %>"><%= row.name %></button>
+              </td>
+              <td class="text-center pt-td-order"><%= row.sortOrder %></td>
+              <td class="text-center pt-td-days">
+                <% if (bhExact) { %>
+                  <span class="pt-bh-days"><%= bhDays %> <span class="text-body-secondary small">ngày</span></span>
+                <% } else { %>
+                  <span class="pt-bh-days pt-bh-approx">~<%= bhDays %> <span class="text-body-secondary small">ngày</span></span>
+                  <span class="pt-bh-approx-mark">ước tính từ tháng</span>
+                <% } %>
+              </td>
+              <td class="small pt-td-wtmode pt-td-wtmode--inline">
+                <div class="pt-wt-controls d-flex flex-column gap-1" data-pt-id="<%= row._id %>">
+                  <select class="form-select form-select-sm pt-wt-select" aria-label="Cách tính BH trên thiết bị">
+                    <option value="1" <%= row.useTypeWarrantyPeriod !== false ? 'selected' : '' %>>Theo loại (DB)</option>
+                    <option value="0" <%= row.useTypeWarrantyPeriod === false ? 'selected' : '' %>>Nhập tay</option>
+                  </select>
+                  <div class="d-flex flex-wrap align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-primary pt-wt-btn-save">Cập nhật</button>
+                    <span class="pt-wt-feedback small text-success" style="min-height:1rem" aria-live="polite"></span>
+                  </div>
+                </div>
+              </td>
+              <td class="text-center pt-td-status">
+                <% if (row.showOnPublicLookup !== false) { %>
+                  <span class="pt-status-badge pt-status-badge--on">Hiện</span>
+                <% } else { %>
+                  <span class="pt-status-badge pt-status-badge--off">Ẩn</span>
+                <% } %>
+              </td>
+              <td class="text-end pt-td-actions">
+                <button type="button" class="btn btn-sm pt-btn-edit" data-edit-id="<%= row._id %>">Sửa</button>
+                <button type="button" class="btn btn-sm pt-btn-delete" data-delete-id="<%= row._id %>">Xóa</button>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: thêm / sửa -->
+<div class="modal fade" id="productTypeModal" tabindex="-1" aria-labelledby="productTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable pt-modal-dialog">
+    <div class="modal-content pt-modal-content">
+      <form id="ptModalForm" autocomplete="off">
+        <div class="modal-header pt-modal-header">
+          <h2 class="modal-title h5 mb-0" id="productTypeModalLabel">Thêm loại sản phẩm</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" data-coreui-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body pt-modal-body">
+          <div id="ptModalErr" class="alert alert-danger py-2 d-none" role="alert"></div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Mã loại <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" name="code" id="ptf_code" required placeholder="VD: CES-001" autocomplete="off" />
+              <div class="form-text small text-body-secondary">Mã do bạn đặt (SKU / model), không trùng nhau.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Tên <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" name="name" id="ptf_name" required />
+              <div class="form-text small" id="ptf_slugHint">Slug URL sẽ được tạo tự động từ tên khi lưu.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label pt-modal-label">Thứ tự</label>
+              <input class="form-control form-control-sm" type="number" name="sortOrder" id="ptf_sortOrder" value="0" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label pt-modal-label">BH mặc định (ngày)</label>
+              <input class="form-control form-control-sm" type="number" name="warrantyDefaultDays" id="ptf_days" min="1" placeholder="VD: 40" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label pt-modal-label">BH theo tháng (dự phòng)</label>
+              <input class="form-control form-control-sm" type="number" name="warrantyMonths" id="ptf_months" min="1" value="12" />
+            </div>
+            <div class="col-12">
+              <label class="form-label pt-modal-label">Mô tả ngắn</label>
+              <textarea class="form-control form-control-sm" name="description" id="ptf_desc" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div class="pt-modal-section-title">Hiển thị cho khách (tra cứu web)</div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="showOnPublicLookup" id="ptf_showWeb" value="on" checked />
+            <label class="form-check-label" for="ptf_showWeb">Hiển thị loại SP trên trang tra cứu công khai</label>
+          </div>
+
+          <div class="pt-modal-section-title">Ảnh minh họa</div>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="pt-img-block pt-upload-zone" data-path-name="imagePath">
+                <input type="hidden" name="imagePath" id="ptf_img" value="" />
+                <div class="pt-img-preview-wrap pt-img-preview">
+                  <div class="pt-img-placeholder">Chưa có ảnh</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="button" class="btn btn-outline-primary btn-sm pt-btn-pick">Chọn ảnh</button>
+                  <button type="button" class="btn btn-primary btn-sm pt-btn-clear">Xóa</button>
+                </div>
+                <input type="file" class="d-none pt-file-input" accept="image/jpeg,image/png,image/gif,image/webp" />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="pt-img-block pt-upload-zone" data-path-name="imagePathBack">
+                <input type="hidden" name="imagePathBack" id="ptf_imgBack" value="" />
+                <div class="pt-img-preview-wrap pt-img-preview">
+                  <div class="pt-img-placeholder">Chưa có ảnh</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="button" class="btn btn-outline-primary btn-sm pt-btn-pick">Chọn ảnh</button>
+                  <button type="button" class="btn btn-primary btn-sm pt-btn-clear">Xóa</button>
+                </div>
+                <input type="file" class="d-none pt-file-input" accept="image/jpeg,image/png,image/gif,image/webp" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer pt-modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" data-coreui-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-primary btn-sm text-uppercase px-4" id="ptModalSubmit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var modalEl = document.getElementById('productTypeModal');
+  var form = document.getElementById('ptModalForm');
+  var errEl = document.getElementById('ptModalErr');
+  var titleEl = document.getElementById('productTypeModalLabel');
+  var submitBtn = document.getElementById('ptModalSubmit');
+
+  function getModalInstance() {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      try {
+        return bootstrap.Modal.getOrCreateInstance(modalEl);
+      } catch (e) {}
+    }
+    if (typeof coreui !== 'undefined' && coreui.Modal) {
+      if (typeof coreui.Modal.getOrCreateInstance === 'function') {
+        return coreui.Modal.getOrCreateInstance(modalEl);
+      }
+      return new coreui.Modal(modalEl);
+    }
+    return null;
+  }
+
+  function showErr(msg) {
+    errEl.textContent = msg || '';
+    errEl.classList.toggle('d-none', !msg);
+  }
+
+  function setPreview(zone, url) {
+    var box = zone.querySelector('.pt-img-preview');
+    if (!box) return;
+    if (url) {
+      box.innerHTML = '<img src="' + String(url).replace(/"/g, '&quot;') + '" alt="" />';
+    } else {
+      box.innerHTML = '<div class="pt-img-placeholder">Chưa có ảnh</div>';
+    }
+  }
+
+  function bindUploadZones(root) {
+    root.querySelectorAll('.pt-upload-zone').forEach(function (zone) {
+      if (zone.dataset.bound === '1') return;
+      zone.dataset.bound = '1';
+      var pathName = zone.getAttribute('data-path-name');
+      var pathInput = zone.querySelector('input[name="' + pathName + '"]');
+      var fileInput = zone.querySelector('.pt-file-input');
+      var btnPick = zone.querySelector('.pt-btn-pick');
+      var btnClear = zone.querySelector('.pt-btn-clear');
+      if (!pathInput || !fileInput) return;
+      btnPick.addEventListener('click', function () { fileInput.click(); });
+      btnClear.addEventListener('click', function () {
+        pathInput.value = '';
+        fileInput.value = '';
+        setPreview(zone, '');
+      });
+      fileInput.addEventListener('change', function () {
+        if (!fileInput.files || !fileInput.files[0]) return;
+        var fd = new FormData();
+        fd.append('file', fileInput.files[0]);
+        fetch('/admin/warranty/product-types/upload', {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        })
+          .then(function (r) {
+            return r.text().then(function (text) {
+              var data = null;
+              try {
+                data = text ? JSON.parse(text) : null;
+              } catch (e) {
+                throw new Error(
+                  r.status === 401 || r.status === 302
+                    ? 'Phiên đăng nhập hết hạn — tải lại trang.'
+                    : 'Phản hồi không phải JSON (HTTP ' + r.status + ').',
+                );
+              }
+              if (!r.ok) {
+                throw new Error((data && data.error) || 'Upload lỗi (HTTP ' + r.status + ').');
+              }
+              return data;
+            });
+          })
+          .then(function (data) {
+            if (!data) return;
+            if (data.error) {
+              alert(data.error);
+              return;
+            }
+            if (data.path) {
+              pathInput.value = data.path;
+              setPreview(zone, data.path);
+            }
+          })
+          .catch(function (err) {
+            alert(err.message || 'Upload lỗi — thử lại.');
+          });
+      });
+    });
+  }
+
+  function resetForm() {
+    form.reset();
+    form.dataset.mode = 'create';
+    delete form.dataset.editId;
+    document.getElementById('ptf_months').value = '12';
+    document.getElementById('ptf_showWeb').checked = true;
+    document.getElementById('ptf_img').value = '';
+    document.getElementById('ptf_imgBack').value = '';
+    form.querySelectorAll('.pt-upload-zone').forEach(function (z) {
+      z.querySelector('.pt-file-input').value = '';
+      setPreview(z, '');
+    });
+    showErr('');
+    var hint = document.getElementById('ptf_slugHint');
+    if (hint) hint.textContent = 'Slug URL sẽ được tạo tự động từ tên khi lưu.';
+    titleEl.textContent = 'Thêm loại sản phẩm';
+    submitBtn.textContent = 'Tạo mới';
+  }
+
+  function fillForm(item) {
+    document.getElementById('ptf_code').value = item.code || '';
+    document.getElementById('ptf_name').value = item.name || '';
+    var hint = document.getElementById('ptf_slugHint');
+    if (hint) {
+      hint.textContent = item.slug
+        ? 'Slug URL (tự động từ tên): ' + item.slug
+        : 'Slug URL sẽ được tạo tự động từ tên khi lưu.';
+    }
+    document.getElementById('ptf_sortOrder').value = item.sortOrder != null ? item.sortOrder : 0;
+    document.getElementById('ptf_days').value =
+      item.warrantyDefaultDays != null && item.warrantyDefaultDays >= 1 ? item.warrantyDefaultDays : '';
+    document.getElementById('ptf_months').value = item.warrantyMonths || 12;
+    document.getElementById('ptf_desc').value = item.description || '';
+    document.getElementById('ptf_showWeb').checked = item.showOnPublicLookup !== false;
+    var img = item.imagePath || '';
+    var imgB = item.imagePathBack || '';
+    document.getElementById('ptf_img').value = img;
+    document.getElementById('ptf_imgBack').value = imgB;
+    var zones = form.querySelectorAll('.pt-upload-zone');
+    if (zones[0]) setPreview(zones[0], img);
+    if (zones[1]) setPreview(zones[1], imgB);
+    showErr('');
+  }
+
+  function openAdd() {
+    resetForm();
+    titleEl.textContent = 'Thêm loại sản phẩm';
+    submitBtn.textContent = 'Tạo mới';
+    var m = getModalInstance();
+    if (m) m.show();
+    else alert('Không mở được cửa sổ — thử tải lại trang.');
+  }
+
+  function openEdit(id) {
+    showErr('');
+    fetch('/admin/warranty/product-types/api/' + encodeURIComponent(id), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || 'Lỗi'); });
+        return r.json();
+      })
+      .then(function (data) {
+        fillForm(data.item);
+        form.dataset.mode = 'edit';
+        form.dataset.editId = id;
+        titleEl.textContent = 'Sửa loại sản phẩm';
+        submitBtn.textContent = 'Lưu';
+        var m = getModalInstance();
+        if (m) m.show();
+        else alert('Không mở được cửa sổ — thử tải lại trang.');
+      })
+      .catch(function (e) {
+        alert(e.message || 'Không tải được dữ liệu.');
+      });
+  }
+
+  document.getElementById('btnPtAdd').addEventListener('click', openAdd);
+  var btnHint = document.getElementById('btnPtAddFromHint');
+  if (btnHint) btnHint.addEventListener('click', openAdd);
+
+  document.querySelector('.pt-list-view').addEventListener('click', function (e) {
+    var wtBtn = e.target.closest('.pt-wt-btn-save');
+    if (wtBtn) {
+      e.preventDefault();
+      var wrap = wtBtn.closest('.pt-wt-controls');
+      if (!wrap) return;
+      var pid = wrap.getAttribute('data-pt-id');
+      var sel = wrap.querySelector('.pt-wt-select');
+      var fb = wrap.querySelector('.pt-wt-feedback');
+      if (!pid || !sel) return;
+      wtBtn.disabled = true;
+      if (fb) fb.textContent = '';
+      fetch('/admin/warranty/product-types/' + encodeURIComponent(pid) + '/warranty-mode', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams({ useTypeWarrantyPeriod: sel.value }),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.error || 'Lỗi');
+            return j;
+          });
+        })
+        .then(function () {
+          if (fb) {
+            fb.textContent = 'Đã lưu';
+            setTimeout(function () {
+              if (fb) fb.textContent = '';
+            }, 2500);
+          }
+        })
+        .catch(function (err) {
+          alert(err.message || 'Không lưu được');
+        })
+        .finally(function () {
+          wtBtn.disabled = false;
+        });
+      return;
+    }
+    var editBtn = e.target.closest('[data-edit-id]');
+    if (editBtn) {
+      e.preventDefault();
+      openEdit(editBtn.getAttribute('data-edit-id'));
+      return;
+    }
+    var delBtn = e.target.closest('[data-delete-id]');
+    if (delBtn) {
+      var did = delBtn.getAttribute('data-delete-id');
+      if (!confirm('Xóa hoặc ẩn loại này?')) return;
+      fetch('/admin/warranty/product-types/' + encodeURIComponent(did) + '/delete', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(),
+      })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (x) {
+          if (!x.ok) throw new Error(x.j.error || 'Lỗi');
+          window.location.reload();
+        })
+        .catch(function (err) {
+          alert(err.message || 'Không xóa được');
+        });
+    }
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    showErr('');
+    var mode = form.dataset.mode;
+    var editId = form.dataset.editId;
+    var url =
+      mode === 'edit' && editId
+        ? '/admin/warranty/product-types/' + encodeURIComponent(editId)
+        : '/admin/warranty/product-types';
+    var body = new URLSearchParams(new FormData(form));
+    submitBtn.disabled = true;
+    fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: body,
+    })
+      .then(function (r) {
+        var ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          throw new Error('Phiên đăng nhập hoặc phản hồi không hợp lệ — tải lại trang.');
+        }
+        return r.json().then(function (j) {
+          if (!r.ok) throw new Error(j.error || 'Lỗi lưu');
+          return j;
+        });
+      })
+      .then(function () {
+        var m = getModalInstance();
+        if (m) m.hide();
+        window.location.reload();
+      })
+      .catch(function (err) {
+        showErr(err.message || 'Lỗi');
+      })
+      .finally(function () {
+        submitBtn.disabled = false;
+      });
+  });
+
+  bindUploadZones(form);
+
+  <% if (typeof openModalAdd !== 'undefined' && openModalAdd) { %>
+  openAdd();
+  <% } %>
+  <% if (typeof openModalEditId !== 'undefined' && openModalEditId) { %>
+  openEdit(<%- JSON.stringify(openModalEditId) %>);
+  <% } %>
+})();
+</script>

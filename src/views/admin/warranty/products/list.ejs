@@ -1,0 +1,881 @@
+<% var wpSegLab = { retail: 'Khách lẻ', dealer: 'Đại lý', agent: 'Công tác viên' }; %>
+<% var wpStatLab = { active: 'Hoạt động', in_warranty: 'Trong hạn BH', warranty_expired: 'Hết BH', in_repair: 'Đang xử lý / lỗi', replaced: 'Đổi trả', inactive: 'Ngưng theo dõi' }; %>
+<div class="warranty-products-page pt-list-view">
+  <div class="pt-list-toolbar">
+    <h1 class="pt-list-title">Sản phẩm đăng ký bảo hành</h1>
+    <div class="pt-list-toolbar-actions d-flex flex-wrap gap-2 align-items-end">
+      <form method="get" action="/admin/warranty/products" class="row g-2 align-items-end mb-0 flex-grow-1" style="min-width: 16rem; max-width: 52rem">
+        <div class="col-12 col-md-4">
+          <label class="small text-body-secondary mb-0 d-block">Tìm kiếm</label>
+          <input type="search" name="q" class="form-control form-control-sm" placeholder="Tên, SĐT, serial…" value="<%= typeof searchQ !== 'undefined' ? searchQ : '' %>" autocomplete="off" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="small text-body-secondary mb-0 d-block">Loại SP</label>
+          <select name="productTypeId" class="form-select form-select-sm">
+            <option value="" <%= !filterProductTypeId ? 'selected' : '' %>>Tất cả</option>
+            <% (productTypes || []).forEach(function (pt) { %>
+              <option value="<%= pt._id %>" <%= String(filterProductTypeId) === String(pt._id) ? 'selected' : '' %>>
+                <%= pt.name %> <% if (pt.code) { %>(<%= pt.code %>)<% } %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="small text-body-secondary mb-0 d-block">/ trang</label>
+          <select name="pageSize" class="form-select form-select-sm">
+            <% [25, 50, 100].forEach(function (n) { %>
+              <option value="<%= n %>" <%= (pagination && pagination.pageSize === n) ? 'selected' : '' %>><%= n %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="col-6 col-md-2 d-flex gap-1">
+          <input type="hidden" name="page" value="1" />
+          <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Lọc</button>
+        </div>
+      </form>
+      <button type="button" class="btn btn-primary btn-sm text-uppercase fw-semibold px-3" id="btnWpAdd">Thêm sản phẩm</button>
+    </div>
+    <div class="pt-list-toolbar-actions w-100 flex-column align-items-stretch gap-2 mt-2">
+      <form method="get" action="/admin/warranty/products/export" class="row g-2 align-items-end border rounded p-2 bg-light">
+        <div class="col-12"><span class="small text-body-secondary fw-semibold">Xuất Excel</span></div>
+        <div class="col-6 col-sm-auto">
+          <label class="small text-body-secondary mb-0 d-block">Từ ngày</label>
+          <input type="date" name="from" class="form-control form-control-sm" required />
+        </div>
+        <div class="col-6 col-sm-auto">
+          <label class="small text-body-secondary mb-0 d-block">Đến ngày</label>
+          <input type="date" name="to" class="form-control form-control-sm" required />
+        </div>
+        <div class="col-12 col-sm-auto">
+          <label class="small text-body-secondary mb-0 d-block">Lọc theo</label>
+          <select name="dateField" class="form-select form-select-sm">
+            <option value="purchaseDate">Ngày mua</option>
+            <option value="createdAt">Ngày tạo bản ghi</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-auto">
+          <button type="submit" class="btn btn-sm btn-outline-success">Tải file .xlsx</button>
+        </div>
+      </form>
+      <form method="post" action="/admin/warranty/products/import" enctype="multipart/form-data" class="row g-2 align-items-end border rounded p-2 bg-light">
+        <div class="col-12">
+          <span class="small text-body-secondary fw-semibold">Nhập Excel (thêm mới hàng loạt)</span>
+          <span class="small text-body-secondary d-block">Cột giống file xuất / mẫu; SĐT nên để định dạng Text trong Excel để giữ số 0 đầu.</span>
+        </div>
+        <div class="col-12 col-md-6">
+          <input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="form-control form-control-sm" required />
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-outline-primary">Nhập file</button>
+        </div>
+        <div class="col-auto">
+          <a href="/admin/warranty/products/import-template" class="btn btn-sm btn-outline-secondary">Tải file mẫu</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="alert alert-info alert-dismissible fade show py-2 mb-3" role="alert">
+      <%= flash %>
+      <button type="button" class="btn-close" data-coreui-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <div class="pt-list-card">
+    <div class="table-responsive pt-table-wrap">
+      <table class="table pt-table mb-0">
+        <thead>
+          <tr>
+            <th>Loại SP</th>
+            <th>Khách hàng</th>
+            <th>SĐT</th>
+            <th>Serial</th>
+            <th class="text-center">Phân loại</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Ngày mua / KH</th>
+            <th class="text-center">Hạn BH <span class="pt-th-sub">(theo loại hoặc nhập tay)</span></th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!items || !items.length) { %>
+            <tr>
+              <td colspan="9" class="pt-empty">Chưa có bản ghi — bấm <strong>Thêm sản phẩm</strong> hoặc tạo <a href="/admin/warranty/product-types">loại SP</a> trước.</td>
+            </tr>
+          <% } %>
+          <% (items || []).forEach(function (row) { %>
+            <% var pt = row.productTypeId && typeof row.productTypeId === 'object' ? row.productTypeId : null; %>
+            <% var ptLabel = pt ? (pt.name + (pt.code ? ' (' + pt.code + ')' : '')) : '—'; %>
+            <% var pd = row.purchaseDate ? new Date(row.purchaseDate) : null; %>
+            <% var wd = row.warrantyEndDate ? new Date(row.warrantyEndDate) : null; %>
+            <tr class="pt-row" data-id="<%= row._id %>">
+              <td class="pt-td-name"><span class="small"><%= ptLabel %></span></td>
+              <td>
+                <button type="button" class="btn btn-link btn-sm pt-name-btn p-0 text-start" data-edit-id="<%= row._id %>"><%= row.customerName %></button>
+              </td>
+              <td><code class="small"><%= row.customerPhone %></code></td>
+              <td><%= row.serialNumber ? row.serialNumber : '—' %></td>
+              <td class="text-center small"><%= wpSegLab[row.customerSegment] || wpSegLab.retail %></td>
+              <td class="text-center small"><%= wpStatLab[row.deviceStatus] || wpStatLab.in_warranty %></td>
+              <td class="text-center small"><%= pd && !isNaN(pd.getTime()) ? pd.toLocaleDateString('vi-VN') : '—' %></td>
+              <td class="text-center small">
+                <% if (wd && !isNaN(wd.getTime())) { %>
+                  <span class="pt-bh-days"><%= wd.toLocaleDateString('vi-VN') %></span>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td class="text-end pt-td-actions">
+                <button type="button" class="btn btn-sm pt-btn-edit" data-edit-id="<%= row._id %>">Sửa</button>
+                <button type="button" class="btn btn-sm pt-btn-delete" data-delete-id="<%= row._id %>">Xóa</button>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('../../../partials/admin-pagination', { basePath: '/admin/warranty/products', pagination: typeof pagination !== 'undefined' ? pagination : null, listQs: typeof listQs !== 'undefined' ? listQs : function () { return ''; } }) %>
+  </div>
+</div>
+
+<div class="modal fade" id="warrantyProductModal" tabindex="-1" aria-labelledby="warrantyProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable pt-modal-dialog">
+    <div class="modal-content pt-modal-content">
+      <form id="wpModalForm" autocomplete="off">
+        <div class="modal-header pt-modal-header">
+          <h2 class="modal-title h5 mb-0" id="warrantyProductModalLabel">Thêm sản phẩm</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" data-coreui-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body pt-modal-body">
+          <div id="wpModalErr" class="alert alert-danger py-2 d-none" role="alert"></div>
+
+          <div class="pt-modal-section-title">Loại sản phẩm & phân loại</div>
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Loại SP <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" name="productTypeId" id="wpf_productTypeId" required>
+                <option value="">— Chọn —</option>
+                <% (productTypes || []).forEach(function (pt) { %>
+                  <option
+                value="<%= pt._id %>"
+                data-use-wt="<%= pt.useTypeWarrantyPeriod === false ? '0' : '1' %>"
+              ><%= pt.name %> <% if (pt.code) { %>(<%= pt.code %>)<% } %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Phân loại kênh <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" name="customerSegment" id="wpf_customerSegment" required>
+                <option value="retail">Khách lẻ</option>
+                <option value="dealer">Đại lý</option>
+                <option value="agent">Công tác viên</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label pt-modal-label">Trạng thái thiết bị</label>
+              <select class="form-select form-select-sm" name="deviceStatus" id="wpf_deviceStatus">
+                <option value="active">Hoạt động</option>
+                <option value="in_warranty" selected>Trong thời hạn bảo hành</option>
+                <option value="warranty_expired">Hết bảo hành</option>
+                <option value="in_repair">Đang xử lý / lỗi</option>
+                <option value="replaced">Đã đổi trả</option>
+                <option value="inactive">Ngưng theo dõi</option>
+              </select>
+              <div class="form-text small text-body-secondary">Cập nhật thủ công theo thực tế (khác với hạn BH tính theo loại SP).</div>
+            </div>
+          </div>
+
+          <div class="pt-modal-section-title">Khách hàng</div>
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Tên <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" name="customerName" id="wpf_customerName" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Số điện thoại <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" name="customerPhone" id="wpf_customerPhone" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Email</label>
+              <input class="form-control form-control-sm" type="email" name="customerEmail" id="wpf_customerEmail" />
+            </div>
+            <div class="col-12">
+              <label class="form-label pt-modal-label">Địa chỉ</label>
+              <input class="form-control form-control-sm" name="customerAddress" id="wpf_customerAddress" />
+            </div>
+          </div>
+
+          <div class="pt-modal-section-title">Thiết bị</div>
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Serial / mã tem</label>
+              <input class="form-control form-control-sm" name="serialNumber" id="wpf_serialNumber" placeholder="Trùng serial trong cùng loại sẽ báo lỗi" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label pt-modal-label">Ngày mua / xuất <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" type="date" name="purchaseDate" id="wpf_purchaseDate" required />
+            </div>
+            <div class="col-md-6" id="wpActivationCol">
+              <label class="form-label pt-modal-label">Ngày kích hoạt bảo hành</label>
+              <input class="form-control form-control-sm" type="date" name="warrantyActivatedAt" id="wpf_warrantyActivatedAt" />
+              <div class="form-text small text-body-secondary" id="wpf_activationHint">
+                Để trống = kích hoạt cùng ngày mua. Dùng tính điểm bắt đầu BH khi loại SP «tính theo loại».
+              </div>
+            </div>
+            <div id="wpManualWarrantyBlock" class="col-12 d-none">
+              <div class="border rounded px-3 py-2 mb-2 bg-body-secondary bg-opacity-10">
+                <div class="fw-semibold small mb-2">Bảo hành nhập tay (theo cấu hình loại SP)</div>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <label class="form-label pt-modal-label">Ngày bắt đầu BH <span class="text-danger">*</span></label>
+                    <input class="form-control form-control-sm" type="date" name="warrantyPeriodStart" id="wpf_warrantyPeriodStart" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label pt-modal-label">Ngày hết hạn BH <span class="text-danger">*</span></label>
+                    <input class="form-control form-control-sm" type="date" name="warrantyPeriodEnd" id="wpf_warrantyPeriodEnd" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label pt-modal-label">Ghi chú</label>
+              <textarea class="form-control form-control-sm" name="notes" id="wpf_notes" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div id="wpLogBlock" class="d-none">
+            <div class="wp-log-panel border rounded-3 px-3 py-2 mb-3 bg-body-tertiary bg-opacity-25">
+              <div class="small text-body-secondary mb-0">
+                <span class="fw-semibold text-body">Trạng thái bảo hành:</span> chỉnh ở mục <strong>«Trạng thái thiết bị»</strong> phía trên, sau đó bấm <strong>Lưu</strong> ở cuối cửa sổ.
+              </div>
+            </div>
+
+            <div class="pt-modal-section-title">Nhật ký <span class="text-body-secondary fw-normal small">(nội bộ / khách)</span></div>
+            <p class="small text-body-secondary mb-2">Thời gian xếp mới nhất trên cùng. Đường dọc minh họa trình tự xử lý.</p>
+            <div id="wpLogList" class="wp-log-list wp-log-timeline mb-3"></div>
+
+            <div class="wp-log-add card border shadow-sm">
+              <div class="card-body p-3">
+                <div class="fw-semibold small mb-3 text-uppercase text-body-secondary">Thêm nhật ký</div>
+                <div class="mb-2">
+                  <input type="text" class="form-control form-control-sm" id="wpf_logTitle" autocomplete="off" placeholder="Tiêu đề log" />
+                </div>
+                <div class="mb-2">
+                  <textarea class="form-control form-control-sm" name="appendLogMessage" id="wpf_appendLogMessage" rows="3" placeholder="Chi tiết"></textarea>
+                </div>
+                <div class="form-check mb-0">
+                  <input type="hidden" name="logVisibleToCustomer" id="wpf_logVisibleToCustomer" value="1" />
+                  <input class="form-check-input" type="checkbox" id="wpf_logVisCheck" checked />
+                  <label class="form-check-label small" for="wpf_logVisCheck">Hiển thị cho khách tra cứu</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer pt-modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" data-coreui-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-primary btn-sm text-uppercase px-4" id="wpModalSubmit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="warrantyLogEditModal" tabindex="-1" aria-labelledby="warrantyLogEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content pt-modal-content">
+      <form id="wpLogEditForm" autocomplete="off">
+        <div class="modal-header pt-modal-header">
+          <h2 class="modal-title h5 mb-0" id="warrantyLogEditModalLabel">Sửa nhật ký</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" data-coreui-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body pt-modal-body">
+          <div id="wpLogEditErr" class="alert alert-danger py-2 d-none" role="alert"></div>
+          <div class="mb-2">
+            <label class="form-label pt-modal-label">Nội dung <span class="text-danger">*</span></label>
+            <textarea class="form-control form-control-sm" id="wpled_message" name="message" rows="4" required></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label pt-modal-label">Thời điểm <span class="text-danger">*</span></label>
+            <input class="form-control form-control-sm" type="datetime-local" id="wpled_at" name="at" required />
+          </div>
+          <div class="form-check mb-0">
+            <input type="hidden" name="logVisibleToCustomer" id="wpled_logVisibleToCustomer" value="1" />
+            <input class="form-check-input" type="checkbox" id="wpled_logVisCheck" checked />
+            <label class="form-check-label small" for="wpled_logVisCheck">Hiển thị cho khách tra cứu</label>
+          </div>
+        </div>
+        <div class="modal-footer pt-modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" data-coreui-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="wpled_submit">Lưu nhật ký</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var modalEl = document.getElementById('warrantyProductModal');
+  var logEditModalEl = document.getElementById('warrantyLogEditModal');
+  var form = document.getElementById('wpModalForm');
+  var errEl = document.getElementById('wpModalErr');
+  var titleEl = document.getElementById('warrantyProductModalLabel');
+  var submitBtn = document.getElementById('wpModalSubmit');
+  var logEntriesCache = [];
+
+  function getModalInstance() {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      try {
+        return bootstrap.Modal.getOrCreateInstance(modalEl);
+      } catch (e) {}
+    }
+    if (typeof coreui !== 'undefined' && coreui.Modal) {
+      if (typeof coreui.Modal.getOrCreateInstance === 'function') {
+        return coreui.Modal.getOrCreateInstance(modalEl);
+      }
+      return new coreui.Modal(modalEl);
+    }
+    return null;
+  }
+
+  function getLogEditModalInstance() {
+    if (!logEditModalEl) return null;
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      try {
+        return bootstrap.Modal.getOrCreateInstance(logEditModalEl);
+      } catch (e) {}
+    }
+    if (typeof coreui !== 'undefined' && coreui.Modal) {
+      if (typeof coreui.Modal.getOrCreateInstance === 'function') {
+        return coreui.Modal.getOrCreateInstance(logEditModalEl);
+      }
+      return new coreui.Modal(logEditModalEl);
+    }
+    return null;
+  }
+
+  function showErr(msg) {
+    errEl.textContent = msg || '';
+    errEl.classList.toggle('d-none', !msg);
+  }
+
+  function isoToDateInput(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function isoToDatetimeLocal(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    var h = String(d.getHours()).padStart(2, '0');
+    var min = String(d.getMinutes()).padStart(2, '0');
+    return y + '-' + m + '-' + day + 'T' + h + ':' + min;
+  }
+
+  var KIND_LAB = { sale: 'Bán / xuất', activation: 'Kích hoạt BH', admin: 'Ghi nhận' };
+  var KIND_ORDER = { sale: 0, activation: 1, admin: 2 };
+
+  function sortLogsDefault(logs) {
+    return (logs || []).slice().sort(function (a, b) {
+      var ka = KIND_ORDER[a.kind] != null ? KIND_ORDER[a.kind] : 99;
+      var kb = KIND_ORDER[b.kind] != null ? KIND_ORDER[b.kind] : 99;
+      if (ka !== kb) return ka - kb;
+      var ta = a.at ? new Date(a.at).getTime() : NaN;
+      var tb = b.at ? new Date(b.at).getTime() : NaN;
+      if (isNaN(ta) && isNaN(tb)) return 0;
+      if (isNaN(ta)) return 1;
+      if (isNaN(tb)) return -1;
+      return ta - tb;
+    });
+  }
+
+  function splitLogTitleBody(log) {
+    var msg = String(log.message || '');
+    var kind = KIND_LAB[log.kind] || log.kind || 'Ghi nhận';
+    if (msg.indexOf('\n\n') >= 0) {
+      var parts = msg.split(/\n\n/);
+      var title = (parts[0] || '').trim();
+      var body = parts.slice(1).join('\n\n').trim();
+      return { title: title || kind, body: body };
+    }
+    return { title: kind, body: msg.trim() };
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  function refreshLogsFromItem(item) {
+    if (!item) return;
+    renderLogList(item.deviceLogs);
+  }
+
+  function renderLogList(logs) {
+    var box = document.getElementById('wpLogList');
+    if (!box) return;
+    box.innerHTML = '';
+    logEntriesCache = (logs || []).slice();
+    var arr = sortLogsDefault(logEntriesCache);
+    if (!arr.length) {
+      box.innerHTML =
+        '<div class="wp-log-timeline-empty small text-body-secondary py-2">Chưa có nhật ký (bản ghi cũ có thể chưa có log).</div>';
+      return;
+    }
+    var inner = document.createElement('div');
+    inner.className = 'wp-log-timeline-inner';
+    arr.forEach(function (log) {
+      var d = log.at ? new Date(log.at) : null;
+      var dateLine = d && !isNaN(d.getTime()) ? d.toLocaleDateString('vi-VN') : '—';
+      var parts = splitLogTitleBody(log);
+      var vis = log.visibleToCustomer !== false ? 'Hiện KH' : 'Chỉ nội bộ';
+      var kind = KIND_LAB[log.kind] || log.kind || '';
+      var kindClass =
+        log.kind === 'sale' ? 'wp-log-node--sale' : log.kind === 'activation' ? 'wp-log-node--activation' : 'wp-log-node--admin';
+
+      var lid = log._id ? String(log._id) : '';
+      var actionsHtml = lid
+        ? '<div class="wp-log-card-actions flex-shrink-0 d-flex gap-1 align-items-start">' +
+          '<button type="button" class="btn btn-link btn-sm py-0 px-1 wp-log-btn-edit" data-log-id="' +
+          escapeHtml(lid) +
+          '">Sửa</button>' +
+          '<button type="button" class="btn btn-link btn-sm py-0 px-1 text-danger wp-log-btn-del" data-log-id="' +
+          escapeHtml(lid) +
+          '">Xóa</button>' +
+          '</div>'
+        : '';
+
+      var item = document.createElement('div');
+      item.className = 'wp-log-timeline-item';
+      item.innerHTML =
+        '<span class="wp-log-timeline-node ' +
+        kindClass +
+        '" aria-hidden="true"></span>' +
+        '<div class="wp-log-timeline-card">' +
+        '<div class="d-flex justify-content-between align-items-start gap-2 wp-log-timeline-card-head">' +
+        '<div class="flex-grow-1 min-w-0">' +
+        '<div class="wp-log-timeline-date text-body-secondary">' +
+        escapeHtml(dateLine) +
+        '</div>' +
+        '<div class="wp-log-timeline-title">' +
+        escapeHtml(parts.title) +
+        '</div>' +
+        (parts.body
+          ? '<div class="wp-log-timeline-body">' + escapeHtml(parts.body).replace(/\n/g, '<br />') + '</div>'
+          : '') +
+        '</div>' +
+        actionsHtml +
+        '</div>' +
+        '<div class="wp-log-timeline-meta">' +
+        '<span class="wp-log-meta-pill">' +
+        escapeHtml(vis) +
+        '</span>' +
+        '<span class="text-body-secondary"> · ' +
+        escapeHtml(kind) +
+        '</span>' +
+        '</div>' +
+        '</div>';
+      inner.appendChild(item);
+    });
+    box.appendChild(inner);
+  }
+
+  function syncWarrantyPeriodUi() {
+    var sel = document.getElementById('wpf_productTypeId');
+    var opt = sel && sel.options[sel.selectedIndex];
+    var useType = !opt || opt.getAttribute('data-use-wt') !== '0';
+    var manual = document.getElementById('wpManualWarrantyBlock');
+    var actCol = document.getElementById('wpActivationCol');
+    var ws = document.getElementById('wpf_warrantyPeriodStart');
+    var we = document.getElementById('wpf_warrantyPeriodEnd');
+    var act = document.getElementById('wpf_warrantyActivatedAt');
+    if (useType) {
+      if (manual) manual.classList.add('d-none');
+      if (actCol) actCol.classList.remove('d-none');
+      if (ws) {
+        ws.required = false;
+        ws.value = '';
+      }
+      if (we) {
+        we.required = false;
+        we.value = '';
+      }
+    } else {
+      if (manual) manual.classList.remove('d-none');
+      if (actCol) actCol.classList.add('d-none');
+      if (act) act.value = '';
+      if (ws) ws.required = true;
+      if (we) we.required = true;
+    }
+  }
+
+  function resetForm() {
+    form.reset();
+    form.dataset.mode = 'create';
+    delete form.dataset.editId;
+    document.getElementById('wpf_customerSegment').value = 'retail';
+    document.getElementById('wpf_deviceStatus').value = 'in_warranty';
+    document.getElementById('wpf_warrantyActivatedAt').value = '';
+    var wps = document.getElementById('wpf_warrantyPeriodStart');
+    var wpe = document.getElementById('wpf_warrantyPeriodEnd');
+    if (wps) wps.value = '';
+    if (wpe) wpe.value = '';
+    document.getElementById('wpf_appendLogMessage').value = '';
+    var lt = document.getElementById('wpf_logTitle');
+    if (lt) lt.value = '';
+    var logHid = document.getElementById('wpf_logVisibleToCustomer');
+    var logChk = document.getElementById('wpf_logVisCheck');
+    if (logHid) logHid.value = '1';
+    if (logChk) logChk.checked = true;
+    var lb = document.getElementById('wpLogBlock');
+    if (lb) lb.classList.add('d-none');
+    var logList = document.getElementById('wpLogList');
+    if (logList) logList.innerHTML = '';
+    logEntriesCache = [];
+    var lef = document.getElementById('wpLogEditForm');
+    if (lef) delete lef.dataset.logId;
+    showErr('');
+    titleEl.textContent = 'Thêm sản phẩm';
+    submitBtn.textContent = 'Tạo mới';
+    syncWarrantyPeriodUi();
+  }
+
+  function fillForm(item) {
+    var ptId = item.productTypeId && item.productTypeId._id ? String(item.productTypeId._id) : String(item.productTypeId || '');
+    document.getElementById('wpf_productTypeId').value = ptId;
+    document.getElementById('wpf_customerSegment').value = item.customerSegment || 'retail';
+    document.getElementById('wpf_deviceStatus').value = item.deviceStatus || 'in_warranty';
+    document.getElementById('wpf_customerName').value = item.customerName || '';
+    document.getElementById('wpf_customerPhone').value = item.customerPhone || '';
+    document.getElementById('wpf_customerEmail').value = item.customerEmail || '';
+    document.getElementById('wpf_customerAddress').value = item.customerAddress || '';
+    document.getElementById('wpf_serialNumber').value = item.serialNumber || '';
+    document.getElementById('wpf_purchaseDate').value = isoToDateInput(item.purchaseDate);
+    document.getElementById('wpf_warrantyActivatedAt').value = item.warrantyActivatedAt
+      ? isoToDateInput(item.warrantyActivatedAt)
+      : '';
+    var wps = document.getElementById('wpf_warrantyPeriodStart');
+    var wpe = document.getElementById('wpf_warrantyPeriodEnd');
+    if (wps) wps.value = item.warrantyPeriodStart ? isoToDateInput(item.warrantyPeriodStart) : '';
+    if (wpe) wpe.value = item.warrantyPeriodEnd ? isoToDateInput(item.warrantyPeriodEnd) : '';
+    document.getElementById('wpf_notes').value = item.notes || '';
+    document.getElementById('wpf_appendLogMessage').value = '';
+    var lt2 = document.getElementById('wpf_logTitle');
+    if (lt2) lt2.value = '';
+    var logHid2 = document.getElementById('wpf_logVisibleToCustomer');
+    var logChk2 = document.getElementById('wpf_logVisCheck');
+    if (logHid2) logHid2.value = '1';
+    if (logChk2) logChk2.checked = true;
+    var lb = document.getElementById('wpLogBlock');
+    if (lb) lb.classList.remove('d-none');
+    renderLogList(item.deviceLogs);
+    syncWarrantyPeriodUi();
+    showErr('');
+  }
+
+  function openAdd() {
+    resetForm();
+    var m = getModalInstance();
+    if (m) m.show();
+    else alert('Không mở được cửa sổ — thử tải lại trang.');
+  }
+
+  function openEdit(id) {
+    showErr('');
+    fetch('/admin/warranty/products/api/' + encodeURIComponent(id), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || 'Lỗi'); });
+        return r.json();
+      })
+      .then(function (data) {
+        fillForm(data.item);
+        form.dataset.mode = 'edit';
+        form.dataset.editId = id;
+        titleEl.textContent = 'Sửa sản phẩm';
+        submitBtn.textContent = 'Lưu thay đổi';
+        var m = getModalInstance();
+        if (m) m.show();
+        else alert('Không mở được cửa sổ — thử tải lại trang.');
+      })
+      .catch(function (e) {
+        alert(e.message || 'Không tải được dữ liệu.');
+      });
+  }
+
+  document.getElementById('btnWpAdd').addEventListener('click', openAdd);
+  document.getElementById('wpf_productTypeId').addEventListener('change', syncWarrantyPeriodUi);
+
+  var wpLogBlock = document.getElementById('wpLogBlock');
+  if (wpLogBlock) {
+    wpLogBlock.addEventListener('click', function (e) {
+      var editBtn = e.target.closest('.wp-log-btn-edit');
+      if (editBtn) {
+        e.preventDefault();
+        var logId = editBtn.getAttribute('data-log-id');
+        var pid = form.dataset.editId;
+        if (!logId || !pid) return;
+        var log = logEntriesCache.find(function (l) {
+          return String(l._id) === logId;
+        });
+        if (!log) return;
+        var msgEl = document.getElementById('wpled_message');
+        var atEl = document.getElementById('wpled_at');
+        if (msgEl) msgEl.value = log.message || '';
+        if (atEl) atEl.value = isoToDatetimeLocal(log.at);
+        var wchk = document.getElementById('wpled_logVisCheck');
+        var whid = document.getElementById('wpled_logVisibleToCustomer');
+        if (wchk && whid) {
+          wchk.checked = log.visibleToCustomer !== false;
+          whid.value = wchk.checked ? '1' : '0';
+        }
+        var lef = document.getElementById('wpLogEditForm');
+        if (lef) lef.dataset.logId = logId;
+        var errEd = document.getElementById('wpLogEditErr');
+        if (errEd) {
+          errEd.textContent = '';
+          errEd.classList.add('d-none');
+        }
+        var m2 = getLogEditModalInstance();
+        if (m2) m2.show();
+        return;
+      }
+      var delBtn = e.target.closest('.wp-log-btn-del');
+      if (delBtn) {
+        e.preventDefault();
+        var logIdDel = delBtn.getAttribute('data-log-id');
+        var pidDel = form.dataset.editId;
+        if (!logIdDel || !pidDel) return;
+        if (!confirm('Xóa dòng nhật ký này?')) return;
+        fetch(
+          '/admin/warranty/products/' +
+            encodeURIComponent(pidDel) +
+            '/logs/' +
+            encodeURIComponent(logIdDel) +
+            '/delete',
+          {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams(),
+          },
+        )
+          .then(function (r) {
+            return r.json().then(function (j) {
+              return { ok: r.ok, j: j };
+            });
+          })
+          .then(function (x) {
+            if (!x.ok) throw new Error(x.j.error || 'Lỗi');
+            if (x.j.item) refreshLogsFromItem(x.j.item);
+          })
+          .catch(function (err) {
+            alert(err.message || 'Không xóa được');
+          });
+      }
+    });
+  }
+
+  var wpLogEditForm = document.getElementById('wpLogEditForm');
+  if (wpLogEditForm) {
+    wpLogEditForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var pid = form.dataset.editId;
+      var lid = wpLogEditForm.dataset.logId;
+      if (!pid || !lid) return;
+      var errEd = document.getElementById('wpLogEditErr');
+      function showLogEditErr(msg) {
+        if (!errEd) return;
+        errEd.textContent = msg || '';
+        errEd.classList.toggle('d-none', !msg);
+      }
+      showLogEditErr('');
+      var fd = new FormData(wpLogEditForm);
+      var body = new URLSearchParams(fd);
+      var wpledSub = document.getElementById('wpled_submit');
+      if (wpledSub) wpledSub.disabled = true;
+      fetch(
+        '/admin/warranty/products/' + encodeURIComponent(pid) + '/logs/' + encodeURIComponent(lid) + '/update',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: body,
+        },
+      )
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.error || 'Lỗi');
+            return j;
+          });
+        })
+        .then(function (j) {
+          if (j.item) refreshLogsFromItem(j.item);
+          var m2 = getLogEditModalInstance();
+          if (m2) m2.hide();
+        })
+        .catch(function (err) {
+          showLogEditErr(err.message || 'Lỗi');
+        })
+        .finally(function () {
+          if (wpledSub) wpledSub.disabled = false;
+        });
+    });
+  }
+
+  document.querySelector('.warranty-products-page').addEventListener('click', function (e) {
+    var editBtn = e.target.closest('[data-edit-id]');
+    if (editBtn) {
+      e.preventDefault();
+      openEdit(editBtn.getAttribute('data-edit-id'));
+      return;
+    }
+    var delBtn = e.target.closest('[data-delete-id]');
+    if (delBtn) {
+      var did = delBtn.getAttribute('data-delete-id');
+      if (!confirm('Xóa bản ghi sản phẩm này?')) return;
+      fetch('/admin/warranty/products/' + encodeURIComponent(did) + '/delete', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(),
+      })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (x) {
+          if (!x.ok) throw new Error(x.j.error || 'Lỗi');
+          window.location.reload();
+        })
+        .catch(function (err) {
+          alert(err.message || 'Không xóa được');
+        });
+    }
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    showErr('');
+    var sel = document.getElementById('wpf_productTypeId');
+    var opt = sel && sel.options[sel.selectedIndex];
+    var useType = !opt || opt.getAttribute('data-use-wt') !== '0';
+    if (!useType) {
+      var s = document.getElementById('wpf_warrantyPeriodStart');
+      var en = document.getElementById('wpf_warrantyPeriodEnd');
+      if (!s || !en || !String(s.value || '').trim() || !String(en.value || '').trim()) {
+        showErr('Chọn loại SP yêu cầu nhập đủ ngày bắt đầu và ngày hết hạn bảo hành.');
+        return;
+      }
+      if (new Date(en.value) < new Date(s.value)) {
+        showErr('Ngày hết hạn BH phải sau hoặc cùng ngày bắt đầu.');
+        return;
+      }
+    }
+    var mode = form.dataset.mode;
+    var editId = form.dataset.editId;
+    var url =
+      mode === 'edit' && editId
+        ? '/admin/warranty/products/' + encodeURIComponent(editId)
+        : '/admin/warranty/products';
+    var fd = new FormData(form);
+    var titleEl = document.getElementById('wpf_logTitle');
+    var msgEl = document.getElementById('wpf_appendLogMessage');
+    if (titleEl && msgEl) {
+      var tt = String(titleEl.value || '').trim();
+      var mm = String(msgEl.value || '').trim();
+      var combined = '';
+      if (tt && mm) combined = tt + '\n\n' + mm;
+      else if (mm) combined = mm;
+      else if (tt) combined = tt;
+      if (combined) fd.set('appendLogMessage', combined);
+      else fd.delete('appendLogMessage');
+    }
+    var body = new URLSearchParams(fd);
+    submitBtn.disabled = true;
+    fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: body,
+    })
+      .then(function (r) {
+        var ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          throw new Error('Phiên đăng nhập hoặc phản hồi không hợp lệ — tải lại trang.');
+        }
+        return r.json().then(function (j) {
+          if (!r.ok) throw new Error(j.error || 'Lỗi lưu');
+          return j;
+        });
+      })
+      .then(function () {
+        var m = getModalInstance();
+        if (m) m.hide();
+        window.location.reload();
+      })
+      .catch(function (err) {
+        showErr(err.message || 'Lỗi');
+      })
+      .finally(function () {
+        submitBtn.disabled = false;
+      });
+  });
+
+  <% if (typeof openModalAdd !== 'undefined' && openModalAdd) { %>
+  openAdd();
+  <% } %>
+  <% if (typeof openModalEditId !== 'undefined' && openModalEditId) { %>
+  openEdit(<%- JSON.stringify(openModalEditId) %>);
+  <% } %>
+
+  (function bindLogVisibilityCheck() {
+    var c = document.getElementById('wpf_logVisCheck');
+    var h = document.getElementById('wpf_logVisibleToCustomer');
+    if (!c || !h) return;
+    function sync() {
+      h.value = c.checked ? '1' : '0';
+    }
+    c.addEventListener('change', sync);
+    sync();
+  })();
+
+  (function bindLogEditVisibilityCheck() {
+    var c = document.getElementById('wpled_logVisCheck');
+    var h = document.getElementById('wpled_logVisibleToCustomer');
+    if (!c || !h) return;
+    function sync() {
+      h.value = c.checked ? '1' : '0';
+    }
+    c.addEventListener('change', sync);
+    sync();
+  })();
+})();
+</script>

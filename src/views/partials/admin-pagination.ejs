@@ -1,0 +1,20 @@
+<% if (typeof pagination !== 'undefined' && pagination) { %>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top">
+    <div class="small text-body-secondary">
+      Tổng <strong><%= pagination.total %></strong> mục
+      <% if (pagination.totalPages > 1) { %>
+        — Trang <strong><%= pagination.page %></strong> / <%= pagination.totalPages %>
+      <% } %>
+    </div>
+    <% if (pagination.totalPages > 1) { %>
+      <nav class="d-flex flex-wrap align-items-center gap-1" aria-label="Phân trang">
+        <% if (pagination.page > 1) { %>
+          <a class="btn btn-sm btn-outline-secondary" href="<%= basePath %><%= listQs({ page: pagination.page - 1 }) %>">« Trước</a>
+        <% } %>
+        <% if (pagination.page < pagination.totalPages) { %>
+          <a class="btn btn-sm btn-outline-secondary" href="<%= basePath %><%= listQs({ page: pagination.page + 1 }) %>">Sau »</a>
+        <% } %>
+      </nav>
+    <% } %>
+  </div>
+<% } %>

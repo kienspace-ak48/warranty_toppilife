@@ -1,0 +1,71 @@
+<div class="mx-auto max-w-2xl px-4 sm:px-6">
+  <div class="mb-8 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 to-teal-800 px-5 py-7 text-white shadow-lg sm:px-7">
+    <h1 class="text-xl font-bold tracking-tight sm:text-2xl">Kích hoạt bảo hành</h1>
+    <p class="mt-2 text-sm leading-relaxed text-emerald-50/95">
+      Dành cho khách mua trên sàn hoặc đại lý: điền thông tin bên dưới. Hệ thống gửi yêu cầu về cửa hàng để xác nhận trước khi bảo hành có hiệu lực.
+    </p>
+  </div>
+
+  <% if (justSubmitted) { %>
+    <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-5 text-emerald-950 shadow-sm" role="status">
+      <p class="font-semibold">Đã gửi yêu cầu kích hoạt</p>
+      <p class="mt-2 text-sm text-emerald-900/90">
+        Chúng tôi sẽ xử lý và phản hồi sau khi xác minh thông tin. Bạn có thể dùng mục <a href="/warranty/tra-cuu" class="font-medium underline decoration-emerald-600/60">Tra cứu bảo hành</a> khi thiết bị đã được duyệt.
+      </p>
+    </div>
+  <% } %>
+
+  <% if (!productTypes || !productTypes.length) { %>
+    <p class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+      Hiện chưa mở kích hoạt online cho loại sản phẩm nào. Vui lòng liên hệ cửa hàng.
+    </p>
+  <% } else { %>
+    <form method="post" action="/warranty/kich-hoat" data-warranty-form="activation" class="space-y-5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 sm:p-7">
+      <div data-warranty-field="productTypeId">
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_productTypeId">Loại sản phẩm <span class="text-red-500" aria-hidden="true">*</span></label>
+        <select
+          name="productTypeId"
+          id="wa_productTypeId"
+          aria-required="true"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15"
+        >
+          <option value="">— Chọn —</option>
+          <% productTypes.forEach(function (pt) { %>
+            <option value="<%= pt._id %>" <%= String(formValues.productTypeId || '') === String(pt._id) ? 'selected' : '' %>><%= pt.name %><%= pt.code ? ' (' + pt.code + ')' : '' %></option>
+          <% }); %>
+        </select>
+        <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
+      </div>
+      <div data-warranty-field="orderCode">
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_orderCode">Mã đơn hàng <span class="text-red-500" aria-hidden="true">*</span></label>
+        <input type="text" name="orderCode" id="wa_orderCode" value="<%= formValues.orderCode || '' %>" autocomplete="off" aria-required="true" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15" placeholder="VD: mã trên sàn TMĐT" />
+        <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
+      </div>
+      <div data-warranty-field="serialNumber">
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_serial">Số serial / mã tem <span class="text-red-500" aria-hidden="true">*</span></label>
+        <input type="text" name="serialNumber" id="wa_serial" value="<%= formValues.serialNumber || '' %>" autocomplete="off" aria-required="true" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 font-mono text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15" placeholder="Trên tem thiết bị" />
+        <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
+      </div>
+      <div data-warranty-field="customerName">
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_name">Họ tên <span class="text-red-500" aria-hidden="true">*</span></label>
+        <input type="text" name="customerName" id="wa_name" value="<%= formValues.customerName || '' %>" autocomplete="name" aria-required="true" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15" />
+        <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
+      </div>
+      <div data-warranty-field="customerPhone">
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_phone">Số điện thoại <span class="text-red-500" aria-hidden="true">*</span></label>
+        <input type="tel" name="customerPhone" id="wa_phone" value="<%= formValues.customerPhone || '' %>" autocomplete="tel" aria-required="true" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15" placeholder="Số dùng liên hệ (10 số, bắt đầu 0)" />
+        <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_addr">Địa chỉ</label>
+        <textarea name="customerAddress" id="wa_addr" rows="3" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15" placeholder="Tùy chọn — hỗ trợ xác minh"><%= formValues.customerAddress || '' %></textarea>
+      </div>
+      <button type="submit" class="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.99]">
+        Gửi yêu cầu kích hoạt
+      </button>
+    </form>
+    <script type="application/json" id="warranty-page-data"><%- JSON.stringify({
+      serverFormError: (typeof formError !== 'undefined' && formError && !(typeof justSubmitted !== 'undefined' && justSubmitted)) ? String(formError) : null
+    }) %></script>
+  <% } %>
+</div>

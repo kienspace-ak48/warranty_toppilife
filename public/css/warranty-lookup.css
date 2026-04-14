@@ -1,0 +1,211 @@
+/* Tra cứu bảo hành — client */
+.wl-body {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.wl-hero {
+  padding: 1.75rem 0 1rem;
+}
+
+.wl-section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  color: #0f172a;
+}
+
+/* Showcase loại SP — flip card */
+.wl-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 576px) {
+  .wl-types-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+.wl-type-card {
+  text-align: center;
+}
+
+.wl-type-flip {
+  perspective: 900px;
+  aspect-ratio: 4 / 3;
+  max-width: 220px;
+  margin: 0 auto;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.wl-type-flip:focus-visible {
+  box-shadow: 0 0 0 3px rgba(88, 86, 214, 0.45);
+}
+
+.wl-type-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+}
+
+/* Desktop: lật khi hover */
+@media (hover: hover) and (pointer: fine) {
+  .wl-type-flip:hover .wl-type-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Cảm ứng / không hover: lật khi gắn class .is-flipped (click) */
+@media (hover: none), (pointer: coarse) {
+  .wl-type-flip.is-flipped .wl-type-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.wl-type-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wl-type-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.wl-type-back {
+  transform: rotateY(180deg);
+}
+
+.wl-type-placeholder {
+  font-size: 0.75rem;
+  color: #64748b;
+  padding: 0.5rem;
+}
+
+.wl-type-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  color: #334155;
+  line-height: 1.3;
+}
+
+.wl-type-code {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.wl-hint-flip {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Form tra cứu */
+.wl-search-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* Kết quả — timeline */
+.wl-result-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+}
+
+.wl-timeline-inner {
+  position: relative;
+  padding-top: 0.15rem;
+}
+
+.wl-timeline-inner::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: linear-gradient(180deg, #5856d6, rgba(100, 116, 139, 0.35));
+  border-radius: 2px;
+}
+
+.wl-timeline-item {
+  position: relative;
+  padding-left: 1.85rem;
+  padding-bottom: 1rem;
+}
+
+.wl-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.wl-timeline-node {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #5856d6;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+  z-index: 1;
+}
+
+.wl-node-sale {
+  border-color: #059669 !important;
+}
+.wl-node-activation {
+  border-color: #2563eb !important;
+}
+.wl-node-admin {
+  border-color: #9333ea !important;
+}
+
+.wl-timeline-card {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+.wl-timeline-date {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.wl-timeline-msg {
+  color: #334155;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.wl-kind-lab {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}

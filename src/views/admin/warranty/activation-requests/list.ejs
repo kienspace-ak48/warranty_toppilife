@@ -1,0 +1,168 @@
+<div class="container-fluid px-4">
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+    <h1 class="h4 mb-0">Yêu cầu kích hoạt bảo hành (khách online)</h1>
+    <form method="get" action="/admin/warranty/activation-requests" class="row g-2 align-items-end flex-grow-1" style="max-width: 48rem">
+      <% if (typeof filterStatus !== 'undefined' && filterStatus) { %>
+        <input type="hidden" name="status" value="<%= filterStatus %>" />
+      <% } %>
+      <input type="hidden" name="page" value="1" />
+      <div class="col-12 col-md-5">
+        <label class="small text-body-secondary mb-0 d-block">Tìm kiếm</label>
+        <input type="search" name="q" class="form-control form-control-sm" placeholder="Mã đơn, serial, tên, SĐT…" value="<%= typeof searchQ !== 'undefined' ? searchQ : '' %>" autocomplete="off" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="small text-body-secondary mb-0 d-block">Loại SP</label>
+        <select name="productTypeId" class="form-select form-select-sm">
+          <option value="">Tất cả</option>
+          <% (productTypes || []).forEach(function (pt) { %>
+            <option value="<%= pt._id %>" <%= String(filterProductTypeId || '') === String(pt._id) ? 'selected' : '' %>><%= pt.name %><% if (pt.code) { %> (<%= pt.code %>)<% } %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-6 col-md-1">
+        <label class="small text-body-secondary mb-0 d-block">/ trang</label>
+        <select name="pageSize" class="form-select form-select-sm">
+          <% [25, 50, 100].forEach(function (n) { %>
+            <option value="<%= n %>" <%= (pagination && pagination.pageSize === n) ? 'selected' : '' %>><%= n %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <button type="submit" class="btn btn-sm btn-primary w-100">Lọc</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="btn-group btn-group-sm mb-3 flex-wrap" role="group" aria-label="Trạng thái">
+    <a href="/admin/warranty/activation-requests<%= listQs({ status: 'pending', page: 1 }) %>" class="btn <%= filterStatus === 'pending' ? 'btn-primary' : 'btn-outline-primary' %>">Chờ duyệt</a>
+    <a href="/admin/warranty/activation-requests<%= listQs({ status: 'approved', page: 1 }) %>" class="btn <%= filterStatus === 'approved' ? 'btn-primary' : 'btn-outline-primary' %>">Đã duyệt</a>
+    <a href="/admin/warranty/activation-requests<%= listQs({ status: 'rejected', page: 1 }) %>" class="btn <%= filterStatus === 'rejected' ? 'btn-primary' : 'btn-outline-primary' %>">Từ chối</a>
+    <a href="/admin/warranty/activation-requests<%= listQs({ status: '', page: 1 }) %>" class="btn <%= !filterStatus ? 'btn-primary' : 'btn-outline-primary' %>">Tất cả</a>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="min-width: 130px;">Thời gian</th>
+            <th>Loại SP</th>
+            <th>Mã đơn</th>
+            <th>Serial</th>
+            <th>Khách</th>
+            <th>SĐT</th>
+            <th>Trạng thái</th>
+            <th class="text-end" style="min-width: 140px;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!items || !items.length) { %>
+            <tr>
+              <td colspan="8" class="text-body-secondary text-center py-4">Không có yêu cầu nào.</td>
+            </tr>
+          <% } %>
+          <% (items || []).forEach(function (row) { %>
+            <% var pt = row.productTypeId && typeof row.productTypeId === 'object' ? row.productTypeId : null; %>
+            <% var ptName = pt ? pt.name : '—'; %>
+            <tr data-id="<%= row._id %>">
+              <td class="small text-body-secondary">
+                <% var cr = row.createdAt ? new Date(row.createdAt) : null; %>
+                <%= cr && !isNaN(cr.getTime()) ? cr.toLocaleString('vi-VN') : '—' %>
+              </td>
+              <td class="small"><%= ptName %></td>
+              <td><code class="small"><%= row.orderCode %></code></td>
+              <td><code class="small"><%= row.serialNumber %></code></td>
+              <td class="small"><%= row.customerName %></td>
+              <td class="small"><%= row.customerPhone %></td>
+              <td>
+                <% if (row.status === 'pending') { %>
+                  <span class="badge text-bg-warning">Chờ duyệt</span>
+                <% } else if (row.status === 'approved') { %>
+                  <span class="badge text-bg-success">Đã duyệt</span>
+                <% } else { %>
+                  <span class="badge text-bg-secondary">Từ chối</span>
+                <% } %>
+              </td>
+              <td class="text-end">
+                <% if (row.status === 'pending') { %>
+                  <button type="button" class="btn btn-success btn-sm ar-approve" data-id="<%= row._id %>">Duyệt</button>
+                  <button type="button" class="btn btn-outline-danger btn-sm ar-reject" data-id="<%= row._id %>">Từ chối</button>
+                <% } else if (row.status === 'approved' && row.resolvedWarrantyProductId) { %>
+                  <% var rid = row.resolvedWarrantyProductId._id ? row.resolvedWarrantyProductId._id : row.resolvedWarrantyProductId; %>
+                  <a class="btn btn-sm btn-outline-primary" href="/admin/warranty/products?edit=<%= String(rid) %>">Mở SP</a>
+                <% } else if (row.adminNote) { %>
+                  <span class="small text-body-secondary" title="<%= row.adminNote %>">Ghi chú</span>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('../../../partials/admin-pagination', { basePath: '/admin/warranty/activation-requests', pagination: typeof pagination !== 'undefined' ? pagination : null, listQs: typeof listQs !== 'undefined' ? listQs : function () { return ''; } }) %>
+  </div>
+</div>
+
+<script>
+(function () {
+  function showErr(msg) {
+    alert(msg || 'Lỗi');
+  }
+  function reloadList() {
+    location.reload();
+  }
+  document.querySelectorAll('.ar-approve').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-id');
+      if (!id || !confirm('Duyệt và tạo sản phẩm bảo hành từ yêu cầu này?')) return;
+      fetch('/admin/warranty/activation-requests/' + encodeURIComponent(id) + '/approve', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.error || 'Lỗi');
+            return j;
+          });
+        })
+        .then(function () {
+          reloadList();
+        })
+        .catch(function (e) {
+          showErr(e.message);
+        });
+    });
+  });
+  document.querySelectorAll('.ar-reject').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-id');
+      if (!id) return;
+      var note = window.prompt('Lý do từ chối (tuỳ chọn):', '') || '';
+      fetch('/admin/warranty/activation-requests/' + encodeURIComponent(id) + '/reject', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ note: note }),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.error || 'Lỗi');
+            return j;
+          });
+        })
+        .then(function () {
+          reloadList();
+        })
+        .catch(function (e) {
+          showErr(e.message);
+        });
+    });
+  });
+})();
+</script>

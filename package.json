@@ -1,0 +1,35 @@
+{
+  "name": "warranty_toppilife",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:client-css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --minify",
+    "watch:client-css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --watch",
+    "dev": "nodemon --inspect src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "KienVu",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^8.3.2",
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4",
+    "slugify": "^1.6.9",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^4.2.2"
+  }
+}

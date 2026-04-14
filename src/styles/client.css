@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@source "../views/home/**/*.ejs";
+@source "../views/layouts/main.ejs";
+@source "../views/partials/**/*.ejs";
+@source "../views/warranty/**/*.ejs";
+
+/* Flip ảnh 2 mặt — cần preserve-3d / backface (không generate đủ bằng utility) */
+@layer components {
+  .wl-flip {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 0.75rem;
+  }
+  .wl-perspective {
+    perspective: 1000px;
+  }
+  .wl-flip-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    border-radius: 0.75rem;
+  }
+  .wl-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+  .wl-face-back {
+    transform: rotateY(180deg);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .wl-flip:hover .wl-flip-track {
+      transform: rotateY(180deg);
+    }
+  }
+  @media (hover: none), (pointer: coarse) {
+    .wl-flip.is-flipped .wl-flip-track {
+      transform: rotateY(180deg);
+    }
+  }
+}

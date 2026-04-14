@@ -1,0 +1,88 @@
+<div class="container-fluid px-4">
+  <div class="mb-3">
+    <h1 class="h4 mb-2">Tạo mã QR kích hoạt bảo hành</h1>
+    <p class="text-body-secondary small mb-0">
+      <strong>Hai cách:</strong> (1) <strong>Mã QR cho khách</strong> — cùng URL với trang công khai <code class="small">/warranty/ma-qr</code> (lấy từ <code>PUBLIC_BASE_URL</code> + <code>/warranty/kich-hoat</code>).
+      (2) <strong>QR từ link tùy ý</strong> — dán bất kỳ URL hợp lệ để chỉ tạo ảnh QR (in poster, link khác, v.v.).
+    </p>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger" role="alert"><%= error %></div>
+  <% } %>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="card mb-3">
+        <div class="card-header"><strong>1. Mã QR khách hàng (trang &quot;Mã QR kích hoạt bảo hành&quot;)</strong></div>
+        <div class="card-body">
+          <p class="small text-body-secondary mb-2">
+            Trùng nội dung QR mà khách thấy khi mở <code>/warranty/ma-qr</code> — không cần dán link.
+          </p>
+          <% if (typeof suggestedUrl !== 'undefined' && suggestedUrl) { %>
+            <p class="small mb-3"><span class="text-body-secondary">URL sẽ mã hóa:</span> <code class="small text-break d-inline-block"><%= suggestedUrl %></code></p>
+          <% } else { %>
+            <p class="small text-warning mb-3">Chưa có URL gợi ý — đặt <code>PUBLIC_BASE_URL</code> trong <code>.env</code>.</p>
+          <% } %>
+          <form method="post" action="/admin/warranty/qr">
+            <input type="hidden" name="action" value="public_activation" />
+            <button type="submit" class="btn btn-success"<% if (!(typeof suggestedUrl !== 'undefined' && suggestedUrl)) { %> disabled title="Cần PUBLIC_BASE_URL hoặc host hợp lệ"<% } %>>
+              Tạo mã QR (giống trang khách)
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><strong>2. QR từ link dán (tùy chỉnh)</strong></div>
+        <div class="card-body">
+          <p class="small text-body-secondary mb-2">Chỉ chuyển đúng chuỗi bạn nhập thành ảnh QR — không đổi URL trên site.</p>
+          <form method="post" action="/admin/warranty/qr">
+            <input type="hidden" name="action" value="custom" />
+            <div class="mb-3">
+              <label for="qr_url" class="form-label">URL (http hoặc https)</label>
+              <input
+                type="text"
+                name="url"
+                id="qr_url"
+                class="form-control font-monospace small"
+                placeholder="https://…/warranty/kich-hoat"
+                value="<%= typeof formUrl !== 'undefined' && formUrl != null ? formUrl : '' %>"
+                autocomplete="off"
+              />
+              <% if (typeof suggestedUrl !== 'undefined' && suggestedUrl) { %>
+                <div class="form-text">Gợi ý: <code class="small"><%= suggestedUrl %></code> — có thể copy vào ô trên nếu cần in khác domain.</div>
+              <% } %>
+            </div>
+            <button type="submit" class="btn btn-primary">Tạo QR từ link đã nhập</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card">
+        <div class="card-header"><strong>Kết quả</strong></div>
+        <div class="card-body text-center">
+          <% if (typeof qrDataUrl !== 'undefined' && qrDataUrl && typeof targetUrl !== 'undefined' && targetUrl) { %>
+            <% if (typeof qrSource !== 'undefined' && qrSource === 'public_activation') { %>
+              <p class="small text-success mb-2"><strong>Loại:</strong> mã QR cho khách (như <code>/warranty/ma-qr</code>)</p>
+            <% } else if (typeof qrSource !== 'undefined' && qrSource === 'custom') { %>
+              <p class="small text-body-secondary mb-2"><strong>Loại:</strong> QR từ link tùy chỉnh</p>
+            <% } %>
+            <div class="d-inline-block rounded border bg-white p-2 mb-3">
+              <img src="<%= qrDataUrl %>" width="320" height="320" alt="Mã QR" class="img-fluid" style="max-width: 100%; height: auto;" />
+            </div>
+            <p class="small text-break font-monospace text-body-secondary mb-2"><%= targetUrl %></p>
+            <p class="small mb-2">
+              <a href="<%= targetUrl %>" target="_blank" rel="noopener noreferrer">Mở link trong tab mới</a>
+            </p>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">In / lưu PDF</button>
+          <% } else { %>
+            <p class="text-body-secondary small mb-0">Chọn một trong hai thao tác bên trái để xem ảnh QR tại đây.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

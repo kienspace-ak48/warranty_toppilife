@@ -1,0 +1,190 @@
+<% const dash = typeof dashboard !== 'undefined' && dashboard ? dashboard : {}; %>
+<div class="container-fluid px-0 py-2">
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h4 mb-1">Tổng quan bảo hành</h1>
+      <p class="text-body-secondary small mb-0">Số liệu tổng hợp — xem nhanh trạng thái và xu hướng.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary btn-sm" href="/admin/warranty/product-types">Loại sản phẩm</a>
+      <a class="btn btn-outline-primary btn-sm" href="/admin/warranty/products">Sản phẩm bảo hành</a>
+      <a class="btn btn-outline-secondary btn-sm" href="/admin/warranty/activation-requests">Yêu cầu kích hoạt</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-body-secondary small mb-1">Tổng sản phẩm BH</div>
+          <div class="fs-4 fw-semibold"><%= dash.totalProducts != null ? dash.totalProducts : 0 %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-body-secondary small mb-1">Loại SP (đang dùng)</div>
+          <div class="fs-4 fw-semibold"><%= dash.productTypeCount != null ? dash.productTypeCount : 0 %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-body-secondary small mb-1">Yêu cầu kích hoạt chờ duyệt</div>
+          <div class="fs-4 fw-semibold text-warning"><%= dash.pendingActivations != null ? dash.pendingActivations : 0 %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-body-secondary small mb-1">Thêm mới (7 ngày)</div>
+          <div class="fs-4 fw-semibold"><%= dash.last7DaysCount != null ? dash.last7DaysCount : 0 %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <strong class="small">Theo trạng thái thiết bị</strong>
+        </div>
+        <div class="card-body pt-2">
+          <% const sc = dash.statusChart || { labels: [], data: [] }; const hasStatus = (sc.labels && sc.labels.length); %>
+          <% if (!hasStatus) { %>
+            <p class="text-body-secondary small mb-0">Chưa có sản phẩm hoặc chưa phân loại trạng thái.</p>
+          <% } else { %>
+            <div style="max-height: 280px;"><canvas id="chartStatus"></canvas></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <strong class="small">Theo phân khúc khách</strong>
+        </div>
+        <div class="card-body pt-2">
+          <div style="max-height: 280px;"><canvas id="chartSegment"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <strong class="small">Xu hướng tạo mới (6 tháng gần nhất)</strong>
+        </div>
+        <div class="card-body pt-2">
+          <div style="max-height: 320px;"><canvas id="chartTrend"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var DASH = <%- JSON.stringify(dash).replace(/</g, '\\u003c') %>;
+  if (typeof Chart === 'undefined') return;
+
+  var palette = ['#321fdb', '#39f', '#f9b115', '#e55353', '#2eb85c', '#6f42c1', '#20c997'];
+
+  function segData() {
+    var sc = DASH.segmentChart || { labels: [], data: [] };
+    return { labels: sc.labels || [], data: (sc.data || []).map(function (n) { return Number(n) || 0; }) };
+  }
+
+  function trendData() {
+    var tc = DASH.trendChart || { labels: [], data: [] };
+    return { labels: tc.labels || [], data: (tc.data || []).map(function (n) { return Number(n) || 0; }) };
+  }
+
+  function statusData() {
+    var sc = DASH.statusChart || { labels: [], data: [] };
+    return { labels: sc.labels || [], data: (sc.data || []).map(function (n) { return Number(n) || 0; }) };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var st = statusData();
+    var elStatus = document.getElementById('chartStatus');
+    if (elStatus && st.labels.length) {
+      new Chart(elStatus, {
+        type: 'doughnut',
+        data: {
+          labels: st.labels,
+          datasets: [{
+            data: st.data,
+            backgroundColor: st.labels.map(function (_, i) { return palette[i % palette.length]; }),
+            borderWidth: 0,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    }
+
+    var sg = segData();
+    var elSeg = document.getElementById('chartSegment');
+    if (elSeg) {
+      new Chart(elSeg, {
+        type: 'bar',
+        data: {
+          labels: sg.labels,
+          datasets: [{
+            label: 'Số lượng',
+            data: sg.data,
+            backgroundColor: palette[0],
+            borderRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+          },
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
+
+    var tr = trendData();
+    var elTrend = document.getElementById('chartTrend');
+    if (elTrend) {
+      new Chart(elTrend, {
+        type: 'line',
+        data: {
+          labels: tr.labels,
+          datasets: [{
+            label: 'Sản phẩm tạo mới',
+            data: tr.data,
+            borderColor: palette[0],
+            backgroundColor: 'rgba(50, 31, 219, 0.12)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+          },
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
+  });
+})();
+</script>
