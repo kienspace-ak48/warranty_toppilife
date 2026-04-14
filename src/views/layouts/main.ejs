@@ -8,34 +8,51 @@
     <link rel="stylesheet" href="/css/client.css">
 </head>
 <body class="min-h-full bg-slate-50 text-slate-900 antialiased flex flex-col">
-    <header class="border-b border-slate-200/80 bg-white shadow-sm sticky top-0 z-50">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-            <a href="/" class="inline-flex shrink-0 items-center rounded-md outline-none ring-emerald-500/0 transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2" aria-label="ToppiLife — về trang chủ">
-                <img src="/assets/image/logo.png" alt="ToppiLife" class="h-9 w-auto max-h-10 max-w-[200px] object-contain object-left sm:h-10" width="180" height="40" loading="eager" decoding="async" />
-            </a>
-            <nav class="flex flex-wrap items-center gap-2 text-sm">
-                <a href="/" class="rounded-lg px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Trang chủ</a>
-                <% if (typeof tab === 'undefined') { %>
-                    <a href="/warranty/tra-cuu" class="rounded-lg px-3 py-1.5 font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800">Tra cứu bảo hành</a>
-                <% } %>
+    <% var wt = typeof tab !== 'undefined' ? tab : ''; %>
+    <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white shadow-sm">
+        <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+            <div class="flex items-center justify-between gap-3 py-3 sm:py-3.5">
+                <a href="/" class="inline-flex shrink-0 items-center rounded-md outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2" aria-label="ToppiLife — Tra cứu bảo hành">
+                    <img src="/assets/image/logo.png" alt="ToppiLife" class="h-9 w-auto max-h-10 max-w-[200px] object-contain object-left sm:h-10" width="180" height="40" loading="eager" decoding="async" />
+                </a>
+                <button
+                    type="button"
+                    id="warranty-nav-toggle"
+                    class="relative inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-800 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 md:hidden"
+                    aria-expanded="false"
+                    aria-controls="warranty-mobile-nav"
+                    aria-label="Mở menu điều hướng"
+                >
+                    <span id="warranty-nav-icon-open" class="inline-flex items-center justify-center" aria-hidden="true">
+                        <svg class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </span>
+                    <span id="warranty-nav-icon-close" class="inline-flex items-center justify-center" aria-hidden="true" hidden>
+                        <svg class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </span>
+                </button>
+                <nav id="warranty-desktop-nav" class="hidden items-center gap-x-0.5 md:flex md:gap-x-1" aria-label="Điều hướng bảo hành">
+                    <a href="/" class="whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-semibold uppercase tracking-wide transition sm:px-3 sm:text-[0.9375rem] <%= wt === 'lookup' ? 'text-[#39B54A]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#39B54A]' %>">Tra cứu bảo hành</a>
+                    <a href="/warranty/kich-hoat" class="whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-semibold uppercase tracking-wide transition sm:px-3 sm:text-[0.9375rem] <%= wt === 'activate' ? 'text-[#39B54A]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#39B54A]' %>">Kích hoạt bảo hành</a>
+                    <a href="/warranty/chinh-sach" class="whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-semibold uppercase tracking-wide transition sm:px-3 sm:text-[0.9375rem] <%= wt === 'policy' ? 'text-[#39B54A]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#39B54A]' %>">Chính sách bảo hành</a>
+                    <a href="/warranty/ma-qr" class="whitespace-nowrap rounded-md px-2.5 py-2 text-sm font-semibold uppercase tracking-wide transition sm:px-3 sm:text-[0.9375rem] <%= wt === 'qr' ? 'text-[#39B54A]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#39B54A]' %>">Mã QR</a>
+                </nav>
+            </div>
+            <nav id="warranty-mobile-nav" class="hidden flex w-full flex-col gap-0 border-t border-slate-200/90 pb-3 pt-2 md:hidden" aria-label="Điều hướng bảo hành">
+                <a href="/" class="block w-full min-h-[44px] rounded-lg px-3 py-2.5 text-left text-sm font-medium leading-snug text-slate-800 transition active:bg-slate-100 <%= wt === 'lookup' ? 'bg-emerald-50 text-[#39B54A]' : '' %>">Tra cứu bảo hành</a>
+                <a href="/warranty/kich-hoat" class="block w-full min-h-[44px] rounded-lg px-3 py-2.5 text-left text-sm font-medium leading-snug text-slate-800 transition active:bg-slate-100 <%= wt === 'activate' ? 'bg-emerald-50 text-[#39B54A]' : '' %>">Kích hoạt bảo hành</a>
+                <a href="/warranty/chinh-sach" class="block w-full min-h-[44px] rounded-lg px-3 py-2.5 text-left text-sm font-medium leading-snug text-slate-800 transition active:bg-slate-100 <%= wt === 'policy' ? 'bg-emerald-50 text-[#39B54A]' : '' %>">Chính sách bảo hành</a>
+                <a href="/warranty/ma-qr" class="block w-full min-h-[44px] rounded-lg px-3 py-2.5 text-left text-sm font-medium leading-snug text-slate-800 transition active:bg-slate-100 <%= wt === 'qr' ? 'bg-emerald-50 text-[#39B54A]' : '' %>">Mã QR</a>
             </nav>
         </div>
-        <% if (typeof tab !== 'undefined') { %>
-            <% var wt = tab; %>
-            <div class="border-t border-slate-100 bg-slate-50/80">
-                <div class="mx-auto flex max-w-6xl flex-wrap gap-1 px-2 py-2 sm:px-4">
-                    <a href="/warranty/tra-cuu" class="rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 <%= wt === 'lookup' ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/80' : 'text-slate-600 hover:bg-white hover:text-slate-900' %>">Tra cứu bảo hành</a>
-                    <a href="/warranty/kich-hoat" class="rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 <%= wt === 'activate' ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/80' : 'text-slate-600 hover:bg-white hover:text-slate-900' %>">Kích hoạt bảo hành</a>
-                    <a href="/warranty/ma-qr" class="rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 <%= wt === 'qr' ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/80' : 'text-slate-600 hover:bg-white hover:text-slate-900' %>">Mã QR</a>
-                </div>
-            </div>
-        <% } %>
     </header>
     <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <%- body %>
     </main>
-    <footer class="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
-        <div class="mx-auto max-w-6xl px-4"><%= typeof tab !== 'undefined' ? 'Bảo hành sản phẩm ToppiLife — tra cứu và kích hoạt' : '© ToppiLife' %></div>
+    <footer class="mt-auto border-t border-slate-200/80 bg-slate-50 py-8">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+            <%- include('../partials/footer-support') %>
+            <p class="mt-8 text-center text-xs text-slate-500">© ToppiLife — tra cứu và kích hoạt bảo hành điện tử</p>
+        </div>
     </footer>
     <div id="warranty-toast-root" class="pointer-events-none fixed right-4 top-20 z-[200] flex max-w-[min(100vw-2rem,22rem)] flex-col gap-2 sm:right-6 sm:top-24" aria-live="polite"></div>
     <script src="/js/warranty-client-forms.js" defer></script>

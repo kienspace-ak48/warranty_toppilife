@@ -760,6 +760,44 @@ class WarrantyService {
   }
 
   /**
+   * Khối lật ảnh hướng dẫn serial — cùng nguồn với trang chủ (tra cứu công khai, có imagePath / imagePathBack).
+   * Khác `listProductTypesForPublicActivation` (chỉ name/code cho dropdown).
+   * Khi DB trống và bật WARRANTY_MOCK_SERIAL_GUIDE → trả mảng demo để dev xem layout.
+   */
+  async getProductTypesForSerialGuideShowcase() {
+    const rows = await this.listProductTypesForPublicLookup();
+    const mockEnv = process.env.WARRANTY_MOCK_SERIAL_GUIDE;
+    const useMock =
+      (!rows || !rows.length) &&
+      (mockEnv === '1' || mockEnv === 'true' || mockEnv === 'yes');
+    if (useMock) return this.getMockSerialGuideProductTypes();
+    return rows || [];
+  }
+
+  /** Hai loại demo — ảnh trỏ /assets/image/logo.png (cùng file header). */
+  getMockSerialGuideProductTypes() {
+    const placeholder = '/assets/image/logo.png';
+    return [
+      {
+        _id: '000000000000000000000001',
+        name: '(Demo) Thiết bị ví dụ A — ToppiLife',
+        code: 'DEMO-A',
+        slug: 'demo-a',
+        imagePath: placeholder,
+        imagePathBack: placeholder,
+      },
+      {
+        _id: '000000000000000000000002',
+        name: '(Demo) Thiết bị ví dụ B — ToppiLife',
+        code: 'DEMO-B',
+        slug: 'demo-b',
+        imagePath: placeholder,
+        imagePathBack: placeholder,
+      },
+    ];
+  }
+
+  /**
    * Một ô tra cứu: khớp serial chính xác trước, không có kết quả thì tra theo SĐT (cùng logic normalize).
    */
   async lookupWarrantyProductsForPublicCombined(qRaw) {
@@ -972,7 +1010,9 @@ class WarrantyService {
       serialNumber: reqDoc.serialNumber,
       purchaseDate: purchaseDateStr,
       warrantyActivatedAt: purchaseDateStr,
-      customerSegment: 'retail',
+      customerSegment: ['retail', 'dealer', 'agent'].includes(reqDoc.customerSegment)
+        ? reqDoc.customerSegment
+        : 'retail',
       notes,
     };
     if (!useType) {
@@ -1022,6 +1062,37 @@ class WarrantyService {
     reqDoc.reviewedAt = new Date();
     reqDoc.adminNote = note != null ? String(note).trim().slice(0, 2000) : '';
     await reqDoc.save();
+    return { ok: true };
+  }
+
+  /** Cập nhật phân loại kênh trên yêu cầu; nếu đã duyệt có SP — đồng bộ sang sản phẩm bảo hành. */
+  async updateWarrantyActivationRequestSegmentAdmin(id, segmentRaw) {
+    const allowed = new Set(['retail', 'dealer', 'agent']);
+    const seg = segmentRaw != null ? String(segmentRaw).trim() : '';
+    if (!allowed.has(seg)) {
+      const err = new Error('INVALID_SEGMENT');
+      err.code = 'INVALID_SEGMENT';
+      throw err;
+    }
+    if (!mongoose.isValidObjectId(id)) {
+      const err = new Error('NOT_FOUND');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+    const reqDoc = await WarrantyActivationRequest.findById(id);
+    if (!reqDoc) {
+      const err = new Error('NOT_FOUND');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+    reqDoc.customerSegment = seg;
+    await reqDoc.save();
+    if (reqDoc.resolvedWarrantyProductId) {
+      await WarrantyProduct.updateOne(
+        { _id: reqDoc.resolvedWarrantyProductId },
+        { $set: { customerSegment: seg } },
+      );
+    }
     return { ok: true };
   }
 

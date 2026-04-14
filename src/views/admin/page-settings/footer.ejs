@@ -1,0 +1,65 @@
+<% var d = typeof data !== 'undefined' && data ? data : { supportSectionTitle: '', items: [] }; %>
+<div class="container-fluid px-3 px-lg-4 py-3 w-100">
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h4 mb-1">Chân trang — Hỗ trợ khách</h1>
+      <p class="text-body-secondary small mb-0">Hiển thị trên mọi trang khách (khối trắng trên chân trang). Dữ liệu lưu trong DB.</p>
+    </div>
+  </div>
+
+  <% if (typeof flash !== 'undefined' && flash === 'saved') { %>
+    <div class="alert alert-success py-2 small mb-3" role="status">Đã lưu cấu hình.</div>
+  <% } else if (typeof flash !== 'undefined' && flash && flash !== 'saved') { %>
+    <div class="alert alert-warning py-2 small mb-3" role="alert"><%= flash %></div>
+  <% } %>
+
+  <form method="post" action="/admin/page-settings/footer" class="card border-0 shadow-sm w-100">
+    <div class="card-body p-4">
+      <div class="mb-4">
+        <label class="form-label small fw-semibold" for="supportSectionTitle">Tiêu đề khối</label>
+        <input type="text" class="form-control" id="supportSectionTitle" name="supportSectionTitle" value="<%= d.supportSectionTitle || '' %>" placeholder="Cần hỗ trợ kích hoạt?" />
+      </div>
+
+      <p class="small text-body-secondary mb-3">Ba cột liên hệ (Hotline / Zalo / Email)</p>
+
+      <% (d.items || []).forEach(function (it, idx) { %>
+        <div class="border rounded-3 p-3 mb-3 bg-light">
+          <div class="fw-semibold small text-body-secondary mb-2">Cột <%= idx + 1 %></div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6">
+              <label class="form-label small mb-0">Nhãn (VD: HOTLINE)</label>
+              <input type="text" class="form-control form-control-sm" name="items[<%= idx %>][label]" value="<%= it.label || '' %>" />
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small mb-0">Màu / kiểu</label>
+              <select class="form-select form-select-sm" name="items[<%= idx %>][accent]">
+                <option value="green" <%= it.accent === 'green' ? 'selected' : '' %>>Xanh lá</option>
+                <option value="blue" <%= it.accent === 'blue' ? 'selected' : '' %>>Xanh dương</option>
+                <option value="red" <%= it.accent === 'red' ? 'selected' : '' %>>Đỏ</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small mb-0">Icon</label>
+              <select class="form-select form-select-sm" name="items[<%= idx %>][icon]">
+                <option value="phone" <%= it.icon === 'phone' ? 'selected' : '' %>>Điện thoại</option>
+                <option value="device" <%= it.icon === 'device' ? 'selected' : '' %>>Máy/Zalo</option>
+                <option value="mail" <%= it.icon === 'mail' ? 'selected' : '' %>>Thư</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0">Nội dung hiển thị (số, email, chữ)</label>
+              <input type="text" class="form-control form-control-sm" name="items[<%= idx %>][value]" value="<%= it.value || '' %>" />
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0">Link (tuỳ chọn: <code class="small">tel:</code>, <code class="small">mailto:</code>, URL)</label>
+              <input type="text" class="form-control form-control-sm font-monospace" name="items[<%= idx %>][href]" value="<%= it.href || '' %>" placeholder="tel:0866094096 hoặc https://..." />
+            </div>
+          </div>
+        </div>
+      <% }); %>
+
+      <button type="submit" class="btn btn-primary btn-sm px-4">Lưu</button>
+      <a href="/" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem trang khách</a>
+    </div>
+  </form>
+</div>

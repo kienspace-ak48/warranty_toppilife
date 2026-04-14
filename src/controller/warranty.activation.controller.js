@@ -15,15 +15,24 @@ function activationErr(e) {
   return e.message || 'Không gửi được yêu cầu. Thử lại sau.';
 }
 
+async function loadActivationPageLists() {
+  const [productTypes, serialGuideProductTypes] = await Promise.all([
+    warrantyService.listProductTypesForPublicActivation(),
+    warrantyService.getProductTypesForSerialGuideShowcase(),
+  ]);
+  return { productTypes, serialGuideProductTypes };
+}
+
 const warrantyActivationController = () => {
   return {
     page: async (req, res) => {
-      const productTypes = await warrantyService.listProductTypesForPublicActivation();
+      const { productTypes, serialGuideProductTypes } = await loadActivationPageLists();
       res.render('warranty/activation', {
         layout: 'layouts/main',
         title: 'Kích hoạt bảo hành',
         tab: 'activate',
         productTypes,
+        serialGuideProductTypes,
         formError: null,
         formValues: {},
         justSubmitted: false,
@@ -31,7 +40,7 @@ const warrantyActivationController = () => {
     },
 
     submit: async (req, res) => {
-      const productTypes = await warrantyService.listProductTypesForPublicActivation();
+      const { productTypes, serialGuideProductTypes } = await loadActivationPageLists();
       try {
         await warrantyService.submitWarrantyActivationRequestPublic(req.body || {});
         return res.render('warranty/activation', {
@@ -39,6 +48,7 @@ const warrantyActivationController = () => {
           title: 'Kích hoạt bảo hành',
           tab: 'activate',
           productTypes,
+          serialGuideProductTypes,
           formError: null,
           formValues: {},
           justSubmitted: true,
@@ -50,6 +60,7 @@ const warrantyActivationController = () => {
           title: 'Kích hoạt bảo hành',
           tab: 'activate',
           productTypes,
+          serialGuideProductTypes,
           formError: activationErr(e),
           formValues: {
             productTypeId: body.productTypeId || '',
@@ -79,6 +90,14 @@ const warrantyActivationController = () => {
         tab: 'qr',
         targetUrl,
         qrDataUrl,
+      });
+    },
+
+    policyPage: async (req, res) => {
+      res.render('warranty/policy', {
+        layout: 'layouts/main',
+        title: 'Chính sách bảo hành — ToppiLife',
+        tab: 'policy',
       });
     },
   };

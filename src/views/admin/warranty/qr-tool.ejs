@@ -24,7 +24,7 @@
           <% } else { %>
             <p class="small text-warning mb-3">Chưa có URL gợi ý — đặt <code>PUBLIC_BASE_URL</code> trong <code>.env</code>.</p>
           <% } %>
-          <form method="post" action="/admin/warranty/qr">
+          <form method="post" action="<%= typeof formAction !== 'undefined' && formAction ? formAction : '/admin/warranty/qr' %>">
             <input type="hidden" name="action" value="public_activation" />
             <button type="submit" class="btn btn-success"<% if (!(typeof suggestedUrl !== 'undefined' && suggestedUrl)) { %> disabled title="Cần PUBLIC_BASE_URL hoặc host hợp lệ"<% } %>>
               Tạo mã QR (giống trang khách)
@@ -37,7 +37,7 @@
         <div class="card-header"><strong>2. QR từ link dán (tùy chỉnh)</strong></div>
         <div class="card-body">
           <p class="small text-body-secondary mb-2">Chỉ chuyển đúng chuỗi bạn nhập thành ảnh QR — không đổi URL trên site.</p>
-          <form method="post" action="/admin/warranty/qr">
+          <form method="post" action="<%= typeof formAction !== 'undefined' && formAction ? formAction : '/admin/warranty/qr' %>">
             <input type="hidden" name="action" value="custom" />
             <div class="mb-3">
               <label for="qr_url" class="form-label">URL (http hoặc https)</label>

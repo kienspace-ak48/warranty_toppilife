@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const warrantyAdmin = require('../controller/warranty.admin.controller')();
+const publicSiteSettingsAdmin = require('../controller/publicSiteSettings.admin.controller')();
 
 const uploadProductTypeMemory = multer({
   storage: multer.memoryStorage(),
@@ -75,8 +76,12 @@ router.post('/warranty/product-types/:id/delete', warrantyAdmin.deleteProductTyp
 router.get('/warranty/activation-requests', warrantyAdmin.listActivationRequests);
 router.post('/warranty/activation-requests/:id/approve', warrantyAdmin.approveActivationRequest);
 router.post('/warranty/activation-requests/:id/reject', warrantyAdmin.rejectActivationRequest);
+router.post('/warranty/activation-requests/:id/segment', warrantyAdmin.updateActivationRequestSegment);
 
-router.get('/warranty/qr', warrantyAdmin.qrToolPage);
+/** Trùng với Page setting — chỉ giữ một menu; bookmark cũ vẫn hoạt động. */
+router.get('/warranty/qr', (req, res) => {
+  res.redirect(302, '/admin/page-settings/qr-kich-hoat');
+});
 router.post('/warranty/qr', warrantyAdmin.qrToolGenerate);
 
 router.get('/warranty/products', warrantyAdmin.listWarrantyProducts);
@@ -114,5 +119,17 @@ router.get('/warranty/products/:id/edit', (req, res) => {
 });
 router.post('/warranty/products/:id', warrantyAdmin.updateWarrantyProduct);
 router.post('/warranty/products/:id/delete', warrantyAdmin.deleteWarrantyProduct);
+
+router.get('/page-settings/footer', publicSiteSettingsAdmin.footerPage);
+router.post('/page-settings/footer', publicSiteSettingsAdmin.footerSave);
+router.get('/page-settings/home-quick-notes', publicSiteSettingsAdmin.quickNotesPage);
+router.post('/page-settings/home-quick-notes', publicSiteSettingsAdmin.quickNotesSave);
+router.get('/page-settings/qr-kich-hoat', warrantyAdmin.qrToolPage);
+router.post('/page-settings/qr-kich-hoat', warrantyAdmin.qrToolGenerate);
+
+router.get('/warranty/public-footer', (req, res) => {
+  res.redirect(302, '/admin/page-settings/footer');
+});
+router.post('/warranty/public-footer', publicSiteSettingsAdmin.footerSave);
 
 module.exports = router;

@@ -5,8 +5,11 @@ const warrantyService = require('../services/warrantyService');
 const homeController = ()=>{
     return {
         Index: async(req, res)=>{
-            const productTypes = await warrantyService.listProductTypesForPublicLookup();
+            const productTypes = await warrantyService.getProductTypesForSerialGuideShowcase();
             res.render('home/index', {
+                layout: 'layouts/main',
+                title: 'Tra cứu bảo hành — ToppiLife',
+                tab: 'lookup',
                 productTypes,
             });
         },

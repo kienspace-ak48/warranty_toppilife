@@ -1,27 +1,30 @@
-<% /* Biến: productTypes; tùy chọn showcaseVariant: 'home' — ảnh w-full, lưới rộng hơn */ %>
+<% /* Biến: productTypes; showcaseVariant: 'home' | 'serial-guide' */ %>
 <% var isHomeShowcase = typeof showcaseVariant !== 'undefined' && showcaseVariant === 'home'; %>
+<% var isSerialGuide = typeof showcaseVariant !== 'undefined' && showcaseVariant === 'serial-guide'; %>
 <section class="warranty-pt-showcase">
+  <% if (!isSerialGuide) { %>
   <div class="mb-4 flex items-end justify-between gap-4 sm:mb-5">
     <div>
       <h2 class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">Loại sản phẩm</h2>
       <p class="mt-1 text-sm text-slate-600">Di chuột hoặc chạm vào ảnh để xem mặt sau (tem / serial).</p>
     </div>
   </div>
+  <% } %>
   <% if (!productTypes || !productTypes.length) { %>
     <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center text-sm text-slate-500">
       Chưa có loại sản phẩm hiển thị công khai.
     </div>
   <% } else { %>
-    <div class="<%= isHomeShowcase ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4' %>">
+    <div class="<%= isSerialGuide ? 'grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8' : (isHomeShowcase ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4') %>">
       <% productTypes.forEach(function (pt) { %>
-        <div class="group flex min-w-0 flex-col rounded-2xl border border-slate-200/90 bg-white <%= isHomeShowcase ? 'p-3 shadow-sm ring-1 ring-slate-900/5 sm:p-4' : 'p-3 shadow-sm ring-1 ring-slate-900/5' %> transition hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-900/5">
+        <div class="group flex min-w-0 flex-col rounded-2xl border border-slate-200/90 bg-white <%= isSerialGuide ? 'overflow-hidden p-0 shadow-md ring-1 ring-slate-900/5' : (isHomeShowcase ? 'p-3 shadow-sm ring-1 ring-slate-900/5 sm:p-4' : 'p-3 shadow-sm ring-1 ring-slate-900/5') %> transition hover:border-[#39B54A]/40 hover:shadow-lg hover:shadow-[#39B54A]/10">
           <div
-            class="wl-flip wl-perspective mx-auto w-full cursor-pointer touch-manipulation rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 <%= isHomeShowcase ? 'aspect-[4/3] max-w-[min(88vw,13.5rem)] sm:max-w-none' : 'aspect-[4/3] max-w-[220px]' %>"
+            class="wl-flip wl-perspective w-full cursor-pointer touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-[#39B54A] focus-visible:ring-offset-2 <%= isSerialGuide ? 'aspect-[4/3]' : (isHomeShowcase ? 'aspect-[4/3] max-w-[min(88vw,13.5rem)] sm:max-w-none mx-auto rounded-xl' : 'aspect-[4/3] max-w-[220px] mx-auto rounded-xl') %>"
             tabindex="0"
             role="button"
             aria-label="Xem ảnh mặt sau <%= pt.name %>"
           >
-            <div class="wl-flip-track shadow-inner shadow-slate-900/10">
+            <div class="wl-flip-track h-full w-full shadow-inner shadow-slate-900/10">
               <div class="wl-face flex items-center justify-center bg-slate-100">
                 <% if (pt.imagePath) { %>
                   <img src="<%= pt.imagePath %>" alt="<%= pt.name %> — mặt trước" class="h-full w-full object-contain bg-white" loading="lazy" />
@@ -38,10 +41,10 @@
               </div>
             </div>
           </div>
-          <div class="<%= isHomeShowcase ? 'mt-3 text-center sm:mt-3.5' : 'mt-3 text-center' %>">
-            <div class="line-clamp-2 <%= isHomeShowcase ? 'text-sm font-semibold leading-snug text-slate-800 sm:text-[0.9375rem]' : 'text-sm font-semibold text-slate-800' %>"><%= pt.name %></div>
+          <div class="<%= isSerialGuide ? 'px-4 py-4 sm:px-5 sm:py-4' : (isHomeShowcase ? 'mt-3 text-center sm:mt-3.5' : 'mt-3 text-center') %>">
+            <div class="line-clamp-2 <%= isSerialGuide ? 'text-base font-bold leading-snug text-slate-900 sm:text-lg' : (isHomeShowcase ? 'text-sm font-semibold leading-snug text-slate-800 sm:text-[0.9375rem]' : 'text-sm font-semibold text-slate-800') %>"><%= pt.name %></div>
             <% if (pt.code) { %>
-              <div class="mt-0.5 font-mono text-xs text-slate-400"><%= pt.code %></div>
+              <div class="mt-1 font-mono text-xs text-slate-400"><%= pt.code %></div>
             <% } %>
           </div>
         </div>

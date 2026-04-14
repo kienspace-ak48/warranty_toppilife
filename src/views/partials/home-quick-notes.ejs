@@ -1,0 +1,14 @@
+<% 
+  var qn = typeof homeQuickNotes !== 'undefined' && homeQuickNotes ? homeQuickNotes : { title: 'Lưu ý nhanh', bodyHtml: '' };
+  var raw = String(qn.bodyHtml || '').trim();
+%>
+<section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm ring-1 ring-slate-900/5 sm:p-6" aria-labelledby="home-quick-notes-heading">
+  <h2 id="home-quick-notes-heading" class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl"><%= qn.title || 'Lưu ý nhanh' %></h2>
+  <div class="mt-4 text-sm leading-relaxed text-slate-700 [&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_a]:font-semibold [&_a]:text-[#39B54A] [&_a]:underline [&_a]:decoration-[#39B54A]/40 [&_a]:underline-offset-2 [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+    <% if (raw) { %>
+      <%- raw %>
+    <% } else { %>
+      <p class="text-slate-400">—</p>
+    <% } %>
+  </div>
+</section>

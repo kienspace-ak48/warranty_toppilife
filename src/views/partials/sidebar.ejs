@@ -29,11 +29,18 @@
           <svg class="nav-icon">
             <use xlink:href="/coreui/vendors/@coreui/icons/svg/free.svg#cil-list"></use>
           </svg> Duyệt kích hoạt BH</a></li>
-      <li class="nav-item"><a class="nav-link" href="/admin/warranty/qr">
-          <svg class="nav-icon">
-            <use xlink:href="/coreui/vendors/@coreui/icons/svg/free.svg#cil-qr-code"></use>
-          </svg> Tạo mã QR (link tùy chỉnh)</a></li>
 
+      <li class="nav-title">Page setting</li>
+      <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
+        <svg class="nav-icon">
+          <use xlink:href="/coreui/vendors/@coreui/icons/svg/free.svg#cil-settings"></use>
+        </svg> Tuỳ chỉnh giao diện khách</a>
+        <ul class="nav-group-items compact">
+          <li class="nav-item"><a class="nav-link" href="/admin/page-settings/footer"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Chân trang &amp; hỗ trợ</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/page-settings/home-quick-notes"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Lưu ý nhanh (trang chủ)</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/page-settings/qr-kich-hoat"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Mã QR</a></li>
+        </ul>
+      </li>
 
       <% if (typeof canAccessSystemAccounts !== 'undefined' && canAccessSystemAccounts) { %>
       <li class="nav-title">Hệ thống</li>

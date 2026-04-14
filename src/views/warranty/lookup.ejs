@@ -1,16 +1,16 @@
 <% var KIND_VI = { sale: 'Bán / xuất', activation: 'Kích hoạt bảo hành', admin: 'Ghi nhận' }; %>
 <div class="mx-auto max-w-6xl px-4 sm:px-6">
-  <div class="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 px-5 py-8 text-white shadow-xl shadow-emerald-900/20 sm:px-8 sm:py-10">
+  <div class="relative overflow-hidden rounded-2xl border border-[#39B54A]/25 bg-gradient-to-br from-[#39B54A] via-[#34a844] to-[#2d8f3e] px-5 py-8 text-white shadow-xl shadow-[#39B54A]/25 sm:px-8 sm:py-10">
     <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl"></div>
     <div class="pointer-events-none absolute -bottom-8 left-1/4 h-32 w-64 rounded-full bg-teal-400/20 blur-2xl"></div>
     <div class="relative">
-      <p class="mb-2 inline-flex rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-emerald-100 ring-1 ring-white/20">Tra cứu nhanh</p>
-      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Tra cứu bảo hành thiết bị</h1>
-      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-emerald-50/95 sm:text-base">
+      <p class="mb-2 inline-flex rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-white/90 ring-1 ring-white/20">ToppiLife</p>
+      <h1 class="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl lg:text-4xl">KIỂM TRA THỜI HẠN BẢO HÀNH ĐIỆN TỬ</h1>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-white/95 sm:text-base">
         Nhập <strong class="font-semibold text-white">số điện thoại</strong> hoặc <strong class="font-semibold text-white">mã serial / tem</strong> đã đăng ký để xem thông tin và nhật ký hiển thị cho khách hàng.
       </p>
-      <p class="mt-3 max-w-2xl text-sm text-emerald-100/95">
-        Không biết serial nằm ở đâu? Xem ảnh minh họa theo từng loại máy trên <a href="/" class="font-semibold text-white underline decoration-white/40 underline-offset-2 transition hover:decoration-white">trang chủ</a> (phần Loại sản phẩm).
+      <p class="mt-3 max-w-2xl text-sm text-white/90">
+        Không biết serial nằm ở đâu? Xem ảnh minh họa theo từng loại máy trên <a href="/" class="font-semibold text-white underline decoration-white/40 underline-offset-2 transition hover:decoration-white">trang chủ</a> (hướng dẫn tìm serial).
       </p>
     </div>
   </div>
@@ -40,14 +40,14 @@
           value="<%= typeof query !== 'undefined' && query.q != null ? query.q : '' %>"
           placeholder="VD: 0859123456 hoặc mã trên tem"
           autocomplete="off"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 font-mono text-sm text-slate-900 shadow-inner shadow-slate-900/5 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/15"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 font-mono text-sm text-slate-900 shadow-inner shadow-slate-900/5 outline-none transition placeholder:text-slate-400 focus:border-[#39B54A] focus:bg-white focus:ring-4 focus:ring-[#39B54A]/15"
         />
         <p class="mt-1 hidden text-xs text-red-600" data-field-error role="alert"></p>
       </div>
       <div class="sm:col-span-2">
         <button
           type="submit"
-          class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 hover:shadow-emerald-700/30 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98]"
+          class="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#39B54A] shadow-lg shadow-black/10 transition hover:bg-white/95 focus:outline-none focus:ring-4 focus:ring-white/40 active:scale-[0.98]"
         >
           Tra cứu
         </button>
@@ -100,9 +100,9 @@
             <p class="text-xs font-medium text-slate-500">SĐT (đã ẩn một phần)</p>
             <p class="mt-1 font-mono text-slate-800"><%= row.customerPhoneMasked %></p>
           </div>
-          <div class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 ring-1 ring-emerald-100/80">
-            <p class="text-xs font-medium text-emerald-800/80">Hạn bảo hành (ước tính)</p>
-            <p class="mt-1 text-lg font-bold text-emerald-900">
+          <div class="rounded-xl border border-[#39B54A]/25 bg-[#39B54A]/10 p-4 ring-1 ring-[#39B54A]/15">
+            <p class="text-xs font-medium text-[#2d8f3e]">Hạn bảo hành (ước tính)</p>
+            <p class="mt-1 text-lg font-bold text-[#267a32]">
               <% var wd = row.warrantyEndDate ? new Date(row.warrantyEndDate) : null; %>
               <%= wd && !isNaN(wd.getTime()) ? wd.toLocaleDateString('vi-VN') : '—' %>
             </p>
@@ -123,7 +123,7 @@
                 <% var ds = d && !isNaN(d.getTime()) ? d.toLocaleDateString('vi-VN') : '—'; %>
                 <li class="relative pb-8 last:pb-0">
                   <% if (log.kind === 'sale') { %>
-                    <span class="absolute -left-[1.4rem] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 ring-4 ring-white" aria-hidden="true"></span>
+                    <span class="absolute -left-[1.4rem] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#39B54A] ring-4 ring-white" aria-hidden="true"></span>
                   <% } else if (log.kind === 'activation') { %>
                     <span class="absolute -left-[1.4rem] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 ring-4 ring-white" aria-hidden="true"></span>
                   <% } else { %>
@@ -133,7 +133,7 @@
                     <div class="flex flex-wrap items-center gap-2 gap-y-1">
                       <time class="text-xs font-medium text-slate-500" datetime="<%= log.at ? new Date(log.at).toISOString() : '' %>"><%= ds %></time>
                       <% if (log.kind === 'sale') { %>
-                        <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800"><%= KIND_VI[log.kind] || log.kind %></span>
+                        <span class="rounded-md bg-[#39B54A]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#267a32]"><%= KIND_VI[log.kind] || log.kind %></span>
                       <% } else if (log.kind === 'activation') { %>
                         <span class="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-800"><%= KIND_VI[log.kind] || log.kind %></span>
                       <% } else { %>

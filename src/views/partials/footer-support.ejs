@@ -1,0 +1,39 @@
+<% 
+  var sf = typeof supportFooter !== 'undefined' && supportFooter ? supportFooter : { title: 'Cần hỗ trợ kích hoạt?', items: [] };
+  var items = sf.items && sf.items.length ? sf.items : [
+    { label: 'HOTLINE', value: '0866.094.096', href: 'tel:0866094096', accent: 'green', icon: 'phone' },
+    { label: 'ZALO CHAT', value: 'Hỗ trợ 24/7', href: 'https://zalo.me/', accent: 'blue', icon: 'device' },
+    { label: 'EMAIL', value: 'info@toppilife.vn', href: 'mailto:info@toppilife.vn', accent: 'red', icon: 'mail' },
+  ];
+  var ring = { green: 'bg-[#39B54A]', blue: 'bg-blue-500', red: 'bg-red-500' };
+  var text = { green: 'text-[#39B54A]', blue: 'text-blue-600', red: 'text-red-600' };
+%>
+<section class="rounded-3xl bg-white p-6 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200/80 sm:p-8" aria-labelledby="footer-support-title">
+  <h2 id="footer-support-title" class="mb-6 text-center text-xl font-bold text-[#39B54A] sm:text-2xl"><%= sf.title || 'Cần hỗ trợ kích hoạt?' %></h2>
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+    <% items.forEach(function (it) { %>
+      <% var ac = it.accent || 'green'; var bg = ring[ac] || ring.green; var tc = text[ac] || text.green; %>
+      <div class="flex items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white <%= bg %>" aria-hidden="true">
+          <% if (it.icon === 'device') { %>
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <% } else if (it.icon === 'mail') { %>
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <% } else { %>
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          <% } %>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs"><%= it.label %></p>
+          <% var hv = String(it.href || '').trim(); %>
+          <% var isHttp = hv && /^https?:\/\//i.test(hv); %>
+          <% if (hv) { %>
+            <a href="<%= hv %>" class="mt-0.5 block text-base font-bold <%= tc %> hover:underline sm:text-lg" <%= isHttp ? 'target="_blank" rel="noopener noreferrer"' : '' %>><%= it.value %></a>
+          <% } else { %>
+            <p class="mt-0.5 text-base font-bold <%= tc %> sm:text-lg"><%= it.value %></p>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</section>

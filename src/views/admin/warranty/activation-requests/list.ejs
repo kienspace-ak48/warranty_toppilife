@@ -51,7 +51,7 @@
             <th>Serial</th>
             <th>Khách</th>
             <th>SĐT</th>
-            <th>Trạng thái</th>
+            <th style="min-width: 11rem;">Trạng thái / Kênh</th>
             <th class="text-end" style="min-width: 140px;">Thao tác</th>
           </tr>
         </thead>
@@ -75,13 +75,23 @@
               <td class="small"><%= row.customerName %></td>
               <td class="small"><%= row.customerPhone %></td>
               <td>
-                <% if (row.status === 'pending') { %>
-                  <span class="badge text-bg-warning">Chờ duyệt</span>
-                <% } else if (row.status === 'approved') { %>
-                  <span class="badge text-bg-success">Đã duyệt</span>
-                <% } else { %>
-                  <span class="badge text-bg-secondary">Từ chối</span>
-                <% } %>
+                <div class="d-flex flex-column gap-1 align-items-start">
+                  <div>
+                    <% if (row.status === 'pending') { %>
+                      <span class="badge text-bg-warning">Chờ duyệt</span>
+                    <% } else if (row.status === 'approved') { %>
+                      <span class="badge text-bg-success">Đã duyệt</span>
+                    <% } else { %>
+                      <span class="badge text-bg-secondary">Từ chối</span>
+                    <% } %>
+                  </div>
+                  <% var segVal = row.customerSegment === 'dealer' ? 'dealer' : (row.customerSegment === 'agent' ? 'agent' : 'retail'); %>
+                  <select id="ar_seg_<%= row._id %>" class="form-select form-select-sm ar-segment" style="min-width: 10rem; max-width: 14rem;" data-id="<%= row._id %>" data-prev="<%= segVal %>">
+                    <option value="retail" <%= segVal === 'retail' ? 'selected' : '' %>>Khách lẻ</option>
+                    <option value="dealer" <%= segVal === 'dealer' ? 'selected' : '' %>>Đại lý</option>
+                    <option value="agent" <%= segVal === 'agent' ? 'selected' : '' %>>Cộng tác viên</option>
+                  </select>
+                </div>
               </td>
               <td class="text-end">
                 <% if (row.status === 'pending') { %>
@@ -160,6 +170,36 @@
           reloadList();
         })
         .catch(function (e) {
+          showErr(e.message);
+        });
+    });
+  });
+  document.querySelectorAll('select.ar-segment').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var id = sel.getAttribute('data-id');
+      var prev = sel.getAttribute('data-prev') || 'retail';
+      var customerSegment = sel.value;
+      if (!id) return;
+      fetch('/admin/warranty/activation-requests/' + encodeURIComponent(id) + '/segment', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customerSegment: customerSegment }),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(j.error || 'Lỗi');
+            return j;
+          });
+        })
+        .then(function () {
+          sel.setAttribute('data-prev', customerSegment);
+        })
+        .catch(function (e) {
+          sel.value = prev;
           showErr(e.message);
         });
     });

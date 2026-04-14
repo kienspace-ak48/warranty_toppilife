@@ -12,14 +12,17 @@ const warrantyActivationSubmitLimiter = rateLimit({
   legacyHeaders: false,
   handler: (req, res, next) => {
     const body = req.body || {};
-    warrantyService
-      .listProductTypesForPublicActivation()
-      .then((productTypes) => {
+    Promise.all([
+      warrantyService.listProductTypesForPublicActivation(),
+      warrantyService.getProductTypesForSerialGuideShowcase(),
+    ])
+      .then(([productTypes, serialGuideProductTypes]) => {
         res.status(429).render('warranty/activation', {
           layout: 'layouts/main',
           title: 'Kích hoạt bảo hành',
           tab: 'activate',
           productTypes,
+          serialGuideProductTypes,
           formError: 'Bạn gửi quá nhiều lần trong thời gian ngắn. Vui lòng đợi vài phút rồi thử lại.',
           formValues: {
             productTypeId: body.productTypeId || '',

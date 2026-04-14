@@ -32,6 +32,19 @@ function parseQrTargetUrl(raw) {
   return { ok: true, href: u.href };
 }
 
+/** Form POST tới đúng route (Bảo hành vs Page setting). */
+function qrFormActionFromReq(req) {
+  const p = req.path || '';
+  return p.includes('page-settings') ? '/admin/page-settings/qr-kich-hoat' : '/admin/warranty/qr';
+}
+
+function qrToolTitleFromReq(req) {
+  const p = req.path || '';
+  return p.includes('page-settings')
+    ? 'Mã QR — Trang kích hoạt bảo hành'
+    : 'Tạo mã QR kích hoạt';
+}
+
 function productTypeErr(e) {
   if (e.code === 'CODE_REQUIRED') return 'Nhập mã loại (code).';
   if (e.code === 'CODE_DUPLICATE') return 'Mã loại đã tồn tại.';
@@ -46,6 +59,7 @@ function activationRequestErr(e) {
   if (e.code === 'NOT_FOUND') return 'Không tìm thấy yêu cầu.';
   if (e.code === 'NOT_PENDING') return 'Yêu cầu đã được xử lý.';
   if (e.code === 'SERIAL_CONFLICT_ON_APPROVE') return 'Serial đã tồn tại trên hệ thống — không thể duyệt.';
+  if (e.code === 'INVALID_SEGMENT') return 'Phân loại kênh không hợp lệ.';
   return e.message || 'Lỗi';
 }
 
@@ -374,12 +388,27 @@ const warrantyAdminController = () => {
       }
     },
 
+    updateActivationRequestSegment: async (req, res) => {
+      try {
+        await warrantyService.updateWarrantyActivationRequestSegmentAdmin(
+          req.params.id,
+          req.body && req.body.customerSegment,
+        );
+        res.json({ ok: true, message: 'Đã cập nhật phân loại kênh.' });
+      } catch (e) {
+        res.status(400).json({ error: activationRequestErr(e) });
+      }
+    },
+
     /** Trang công cụ: dán URL production → tạo QR (in / chụp màn hình), không phụ thuộc domain cũ. */
     qrToolPage: async (req, res) => {
       const suggestedUrl = suggestedActivationUrl(req);
+      const formAction = qrFormActionFromReq(req);
+      const pageTitle = qrToolTitleFromReq(req);
       res.render('admin/warranty/qr-tool', {
         layout: 'layouts/adminLayout',
-        title: 'Tạo mã QR kích hoạt',
+        title: pageTitle,
+        formAction,
         suggestedUrl,
         formUrl: suggestedUrl,
         qrDataUrl: null,
@@ -391,13 +420,16 @@ const warrantyAdminController = () => {
 
     qrToolGenerate: async (req, res) => {
       const suggestedUrl = suggestedActivationUrl(req);
+      const formAction = qrFormActionFromReq(req);
+      const pageTitle = qrToolTitleFromReq(req);
       const action =
         req.body && req.body.action != null ? String(req.body.action).trim() : 'custom';
 
       const renderErr = (status, err, formUrlOverride) =>
         res.status(status).render('admin/warranty/qr-tool', {
           layout: 'layouts/adminLayout',
-          title: 'Tạo mã QR kích hoạt',
+          title: pageTitle,
+          formAction,
           suggestedUrl,
           formUrl: formUrlOverride != null ? formUrlOverride : suggestedUrl,
           qrDataUrl: null,
@@ -416,7 +448,8 @@ const warrantyAdminController = () => {
           });
           return res.render('admin/warranty/qr-tool', {
             layout: 'layouts/adminLayout',
-            title: 'Tạo mã QR kích hoạt',
+            title: pageTitle,
+            formAction,
             suggestedUrl,
             formUrl: formUrlForInput,
             qrDataUrl,

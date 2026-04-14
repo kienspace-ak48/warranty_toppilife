@@ -202,7 +202,55 @@
     }
   }
 
+  /** Menu hamburger — header layout khách (md+ vẫn dùng nav ngang). */
+  function initMobileHeaderNav() {
+    var btn = document.getElementById('warranty-nav-toggle');
+    var panel = document.getElementById('warranty-mobile-nav');
+    var iconOpen = document.getElementById('warranty-nav-icon-open');
+    var iconClose = document.getElementById('warranty-nav-icon-close');
+    if (!btn || !panel) return;
+
+    function isPanelClosed() {
+      return panel.classList.contains('hidden');
+    }
+
+    function setOpen(open) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Đóng menu điều hướng' : 'Mở menu điều hướng');
+      if (open) {
+        panel.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      } else {
+        panel.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+      /** Chỉ một icon: dùng thuộc tính .hidden (tránh xung đột class Tailwind). */
+      if (iconOpen) iconOpen.hidden = !!open;
+      if (iconClose) iconClose.hidden = !open;
+    }
+
+    btn.addEventListener('click', function () {
+      setOpen(isPanelClosed());
+    });
+
+    panel.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        setOpen(false);
+      });
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setOpen(false);
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.matchMedia('(min-width: 768px)').matches) setOpen(false);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    initMobileHeaderNav();
+
     if (!getToastRoot()) return;
 
     window.warrantyToast = warrantyToast;

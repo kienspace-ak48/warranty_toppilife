@@ -19,6 +19,13 @@ const warrantyActivationRequestSchema = new mongoose.Schema(
       default: 'pending',
       index: true,
     },
+    /** Phân loại kênh (admin) — khi duyệt sẽ ghi vào SP bảo hành */
+    customerSegment: {
+      type: String,
+      enum: ['retail', 'dealer', 'agent'],
+      default: 'retail',
+      index: true,
+    },
     adminNote: { type: String, trim: true, default: '' },
     resolvedWarrantyProductId: {
       type: mongoose.Schema.Types.ObjectId,
