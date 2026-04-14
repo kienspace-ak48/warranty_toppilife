@@ -58,7 +58,7 @@
           <% if (!hasStatus) { %>
             <p class="text-body-secondary small mb-0">Chưa có sản phẩm hoặc chưa phân loại trạng thái.</p>
           <% } else { %>
-            <div style="max-height: 280px;"><canvas id="chartStatus"></canvas></div>
+            <div class="position-relative" style="height: 280px;"><canvas id="chartStatus"></canvas></div>
           <% } %>
         </div>
       </div>
@@ -69,7 +69,7 @@
           <strong class="small">Theo phân khúc khách</strong>
         </div>
         <div class="card-body pt-2">
-          <div style="max-height: 280px;"><canvas id="chartSegment"></canvas></div>
+          <div class="position-relative" style="height: 280px;"><canvas id="chartSegment"></canvas></div>
         </div>
       </div>
     </div>
@@ -82,7 +82,7 @@
           <strong class="small">Xu hướng tạo mới (6 tháng gần nhất)</strong>
         </div>
         <div class="card-body pt-2">
-          <div style="max-height: 320px;"><canvas id="chartTrend"></canvas></div>
+          <div class="position-relative" style="height: 320px;"><canvas id="chartTrend"></canvas></div>
         </div>
       </div>
     </div>
@@ -92,7 +92,6 @@
 <script>
 (function () {
   var DASH = <%- JSON.stringify(dash).replace(/</g, '\\u003c') %>;
-  if (typeof Chart === 'undefined') return;
 
   var palette = ['#321fdb', '#39f', '#f9b115', '#e55353', '#2eb85c', '#6f42c1', '#20c997'];
 
@@ -111,7 +110,12 @@
     return { labels: sc.labels || [], data: (sc.data || []).map(function (n) { return Number(n) || 0; }) };
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
+  /**
+   * Layout chèn nội dung view TRƯỚC các thẻ <script src="chart.umd.js"> ở cuối adminLayout.
+   * Script inline chạy khi Chart chưa load → không dùng kiểm tra Chart ở đầu file / không chỉ DOMContentLoaded.
+   */
+  window.addEventListener('load', function () {
+    if (typeof Chart === 'undefined') return;
     var st = statusData();
     var elStatus = document.getElementById('chartStatus');
     if (elStatus && st.labels.length) {
