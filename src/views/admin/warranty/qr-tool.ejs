@@ -2,7 +2,7 @@
   <div class="mb-3">
     <h1 class="h4 mb-2">Tạo mã QR kích hoạt bảo hành</h1>
     <p class="text-body-secondary small mb-0">
-      <strong>Hai cách:</strong> (1) <strong>Mã QR cho khách</strong> — cùng URL với trang công khai <code class="small">/warranty/ma-qr</code> (lấy từ <code>PUBLIC_BASE_URL</code> + <code>/warranty/kich-hoat</code>).
+      <strong>Hai cách:</strong> (1) <strong>Mã QR cho khách</strong> — cùng URL với trang công khai <code class="small">/bao-hanh/ma-qr</code> (lấy từ <code>PUBLIC_BASE_URL</code> + <code>/bao-hanh/kich-hoat</code>).
       (2) <strong>QR từ link tùy ý</strong> — dán bất kỳ URL hợp lệ để chỉ tạo ảnh QR (in poster, link khác, v.v.).
     </p>
   </div>
@@ -17,7 +17,7 @@
         <div class="card-header"><strong>1. Mã QR khách hàng (trang &quot;Mã QR kích hoạt bảo hành&quot;)</strong></div>
         <div class="card-body">
           <p class="small text-body-secondary mb-2">
-            Trùng nội dung QR mà khách thấy khi mở <code>/warranty/ma-qr</code> — không cần dán link.
+            Trùng nội dung QR mà khách thấy khi mở <code>/bao-hanh/ma-qr</code> — không cần dán link.
           </p>
           <% if (typeof suggestedUrl !== 'undefined' && suggestedUrl) { %>
             <p class="small mb-3"><span class="text-body-secondary">URL sẽ mã hóa:</span> <code class="small text-break d-inline-block"><%= suggestedUrl %></code></p>
@@ -46,7 +46,7 @@
                 name="url"
                 id="qr_url"
                 class="form-control font-monospace small"
-                placeholder="https://…/warranty/kich-hoat"
+                placeholder="https://…/bao-hanh/kich-hoat"
                 value="<%= typeof formUrl !== 'undefined' && formUrl != null ? formUrl : '' %>"
                 autocomplete="off"
               />
@@ -66,7 +66,7 @@
         <div class="card-body text-center">
           <% if (typeof qrDataUrl !== 'undefined' && qrDataUrl && typeof targetUrl !== 'undefined' && targetUrl) { %>
             <% if (typeof qrSource !== 'undefined' && qrSource === 'public_activation') { %>
-              <p class="small text-success mb-2"><strong>Loại:</strong> mã QR cho khách (như <code>/warranty/ma-qr</code>)</p>
+              <p class="small text-success mb-2"><strong>Loại:</strong> mã QR cho khách (như <code>/bao-hanh/ma-qr</code>)</p>
             <% } else if (typeof qrSource !== 'undefined' && qrSource === 'custom') { %>
               <p class="small text-body-secondary mb-2"><strong>Loại:</strong> QR từ link tùy chỉnh</p>
             <% } %>

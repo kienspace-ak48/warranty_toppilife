@@ -1,12 +1,10 @@
 <div class="w-full">
+  <% var apIntro = typeof activationPageIntro !== 'undefined' && activationPageIntro ? activationPageIntro : { title: 'Kích hoạt bảo hành', bodyHtml: '' }; %>
   <div class="mb-6 rounded-2xl border border-[#39B54A]/20 bg-gradient-to-br from-[#39B54A] to-[#2d9440] px-5 py-7 text-white shadow-lg sm:mb-8 sm:px-7 lg:px-8">
-    <h1 class="text-xl font-bold tracking-tight sm:text-2xl">Kích hoạt bảo hành</h1>
-    <p class="mt-2 max-w-4xl text-sm leading-relaxed text-white/95">
-      Lưu ý ở đầu: Dành cho khách mua trên sàn thương mại điện tử(Shopee, Tiktok) hoặc đại lý của ToppiLife: điền thông tin bên dưới. Hệ thống gửi yêu cầu về cửa hàng để xác nhận trước khi bảo hành có hiệu lực.
-    </p>
-    <p class="mt-2 max-w-4xl text-sm leading-relaxed text-white/95">
-      Lưu ý: Vui lòng kích hoạt bảo hành trong vòng 7 ngày kể từ khi nhận hàng. Sau 7 ngày, hệ thống sẽ không xử lý yêu cầu kích hoạt bảo hành.
-    </p>
+    <h1 class="text-xl font-bold tracking-tight sm:text-2xl"><%= apIntro.title %></h1>
+    <div class="activation-hero-html mt-2 max-w-4xl text-sm leading-relaxed text-white/95 [&_p]:mt-2 [&_p:first-child]:mt-0 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-white [&_a]:underline [&_strong]:text-white">
+      <%- apIntro.bodyHtml %>
+    </div>
   </div>
 
   <% if (justSubmitted) { %>
@@ -23,7 +21,7 @@
       Hiện chưa mở kích hoạt online cho loại sản phẩm nào. Vui lòng liên hệ cửa hàng.
     </p>
   <% } else { %>
-    <form method="post" action="/warranty/kich-hoat" data-warranty-form="activation" class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 sm:p-7 lg:p-8">
+    <form method="post" action="/bao-hanh/kich-hoat" data-warranty-form="activation" class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 sm:p-7 lg:p-8">
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-5">
         <div class="lg:col-span-2" data-warranty-field="productTypeId">
           <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="wa_productTypeId">Tên sản phẩm <span class="text-red-500" aria-hidden="true">*</span></label>

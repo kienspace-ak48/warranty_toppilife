@@ -17,9 +17,10 @@ const warrantyActivationSubmitLimiter = rateLimit({
       warrantyService.getProductTypesForSerialGuideShowcase(),
     ])
       .then(([productTypes, serialGuideProductTypes]) => {
+        const hero = res.locals && res.locals.activationPageIntro;
         res.status(429).render('warranty/activation', {
           layout: 'layouts/main',
-          title: 'Kích hoạt bảo hành',
+          title: (hero && hero.title) || 'Kích hoạt bảo hành',
           tab: 'activate',
           productTypes,
           serialGuideProductTypes,

@@ -27,7 +27,7 @@ const publicSiteSettingsAdminController = () => {
       const data = await publicSiteSettingsService.getForAdminQuickNotesForm();
       res.render('admin/page-settings/home-quick-notes', {
         layout: 'layouts/adminLayout',
-        title: 'Lưu ý nhanh — Trang chủ',
+        title: 'Nội dung công khai — Trang chủ & kích hoạt',
         data,
         flash: typeof req.query.flash === 'string' ? req.query.flash : '',
       });

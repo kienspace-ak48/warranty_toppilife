@@ -39,6 +39,14 @@ const publicSiteSettingsSchema = new mongoose.Schema(
     homeQuickNotesLineHtml: { type: [String], default: [] },
     /** @deprecated — dùng khi chưa migrate sang HTML */
     homeQuickNotesLines: { type: [quickNoteLineSchema], default: [] },
+    /** @deprecated — migrate sang activationPageIntroBodyHtml */
+    activationPageIntroLine1: { type: String, trim: true, default: '' },
+    /** @deprecated — migrate sang activationPageIntroBodyHtml */
+    activationPageIntroLine2: { type: String, trim: true, default: '' },
+    /** Tiêu đề H1 trang kích hoạt bảo hành (khách) */
+    activationPageTitle: { type: String, trim: true, default: '' },
+    /** Khối HTML (TinyMCE) phần mô tả dưới tiêu đề */
+    activationPageIntroBodyHtml: { type: String, default: '' },
   },
   { timestamps: true },
 );

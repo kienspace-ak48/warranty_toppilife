@@ -5,7 +5,7 @@ const { saveProductTypeImageBuffer } = require('../utils/productTypeImageUpload'
 
 function suggestedActivationUrl(req) {
   const base = (getPublicBaseUrl(req) || '').replace(/\/$/, '');
-  return base ? `${base}/warranty/kich-hoat` : '';
+  return base ? `${base}/bao-hanh/kich-hoat` : '';
 }
 
 /**
@@ -462,7 +462,7 @@ const warrantyAdminController = () => {
         }
       };
 
-      /** Giống trang khách /warranty/ma-qr (PUBLIC_BASE_URL + /warranty/kich-hoat). */
+      /** Giống trang khách /bao-hanh/ma-qr (PUBLIC_BASE_URL + /bao-hanh/kich-hoat). */
       if (action === 'public_activation') {
         if (!suggestedUrl) {
           return renderErr(

@@ -2,6 +2,19 @@ const PublicSiteSettings = require('../models/public-site-settings.model');
 
 const DEFAULT_KEY = 'default';
 
+const DEFAULT_ACTIVATION_TITLE = 'Kích hoạt bảo hành';
+const DEFAULT_ACTIVATION_INTRO_LINE1 =
+  'Lưu ý ở đầu: Dành cho khách mua trên sàn thương mại điện tử(Shopee, Tiktok) hoặc đại lý của ToppiLife: điền thông tin bên dưới. Hệ thống gửi yêu cầu về cửa hàng để xác nhận trước khi bảo hành có hiệu lực.';
+const DEFAULT_ACTIVATION_INTRO_LINE2 =
+  'Lưu ý: Vui lòng kích hoạt bảo hành trong vòng 7 ngày kể từ khi nhận hàng. Sau 7 ngày, hệ thống sẽ không xử lý yêu cầu kích hoạt bảo hành.';
+
+function defaultActivationIntroHtml() {
+  return (
+    `<p>${escHtml(DEFAULT_ACTIVATION_INTRO_LINE1)}</p>` +
+    `<p>${escHtml(DEFAULT_ACTIVATION_INTRO_LINE2)}</p>`
+  );
+}
+
 const MOCK_ITEMS = [
   {
     label: 'HOTLINE',
@@ -51,7 +64,7 @@ const DEFAULT_QUICK_LINES = [
     rest: '',
     prefix: 'Xem thêm ',
     linkText: 'chính sách bảo hành',
-    linkHref: '/warranty/chinh-sach',
+    linkHref: '/bao-hanh/chinh-sach',
     suffix: ' và điều kiện áp dụng.',
   },
 ];
@@ -112,6 +125,28 @@ function legacyLinesToHtmlArray(lines) {
     }
     return `<p><strong class="text-slate-900">${escHtml(line.bold)}</strong>${escHtml(line.rest)}</p>`;
   });
+}
+
+function ensureActivationIntroHtml(doc) {
+  let html = String(doc.activationPageIntroBodyHtml || '').trim();
+  if (html) return sanitizeQuickNotesHtml(html);
+
+  const raw1 = doc && String(doc.activationPageIntroLine1 || '').trim();
+  const raw2 = doc && String(doc.activationPageIntroLine2 || '').trim();
+  if (raw1 || raw2) {
+    const line1 = raw1 || DEFAULT_ACTIVATION_INTRO_LINE1;
+    const line2 = raw2 || DEFAULT_ACTIVATION_INTRO_LINE2;
+    return `<p>${escHtml(line1)}</p><p>${escHtml(line2)}</p>`;
+  }
+
+  return defaultActivationIntroHtml();
+}
+
+function activationPageHeroFromDoc(doc) {
+  return {
+    title: String(doc.activationPageTitle || '').trim() || DEFAULT_ACTIVATION_TITLE,
+    bodyHtml: ensureActivationIntroHtml(doc),
+  };
 }
 
 function sanitizeQuickNotesHtml(html) {
@@ -190,6 +225,14 @@ class PublicSiteSettingsService {
     return doc;
   }
 
+  /** Dùng khi getLayoutLocals lỗi (middleware fallback) */
+  fallbackActivationPageIntro() {
+    return {
+      title: DEFAULT_ACTIVATION_TITLE,
+      bodyHtml: defaultActivationIntroHtml(),
+    };
+  }
+
   async getLayoutLocals() {
     const doc = await this.getOrCreateDoc();
     return {
@@ -201,6 +244,7 @@ class PublicSiteSettingsService {
         title: doc.homeQuickNotesTitle || 'Lưu ý nhanh',
         bodyHtml: ensureBodyHtml(doc),
       },
+      activationPageIntro: activationPageHeroFromDoc(doc),
     };
   }
 
@@ -219,9 +263,12 @@ class PublicSiteSettingsService {
 
   async getForAdminQuickNotesForm() {
     const doc = await this.getOrCreateDoc();
+    const hero = activationPageHeroFromDoc(doc);
     return {
       homeQuickNotesTitle: doc.homeQuickNotesTitle || 'Lưu ý nhanh',
       homeQuickNotesBodyHtml: ensureBodyHtml(doc),
+      activationPageTitle: hero.title,
+      activationPageIntroBodyHtml: ensureActivationIntroHtml(doc),
     };
   }
 
@@ -246,6 +293,10 @@ class PublicSiteSettingsService {
   async updateQuickNotesFromAdminBody(body) {
     const title = String((body && body.homeQuickNotesTitle) || '').trim() || 'Lưu ý nhanh';
     const bodyHtml = sanitizeQuickNotesHtml((body && body.homeQuickNotesBodyHtml) || '');
+    const activationPageTitle =
+      String((body && body.activationPageTitle) || '').trim() || DEFAULT_ACTIVATION_TITLE;
+    const actHtmlRaw = sanitizeQuickNotesHtml((body && body.activationPageIntroBodyHtml) || '');
+    const activationPageIntroBodyHtml = actHtmlRaw || defaultActivationIntroHtml();
 
     await PublicSiteSettings.findOneAndUpdate(
       { key: DEFAULT_KEY },
@@ -253,8 +304,15 @@ class PublicSiteSettingsService {
         $set: {
           homeQuickNotesTitle: title,
           homeQuickNotesBodyHtml: bodyHtml,
+          activationPageTitle,
+          activationPageIntroBodyHtml,
         },
-        $unset: { homeQuickNotesLines: '', homeQuickNotesLineHtml: '' },
+        $unset: {
+          homeQuickNotesLines: '',
+          homeQuickNotesLineHtml: '',
+          activationPageIntroLine1: '',
+          activationPageIntroLine2: '',
+        },
       },
       { upsert: true, new: true },
     );

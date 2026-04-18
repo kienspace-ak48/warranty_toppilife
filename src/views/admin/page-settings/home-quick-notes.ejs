@@ -1,8 +1,8 @@
-<% var d = typeof data !== 'undefined' && data ? data : { homeQuickNotesTitle: '', homeQuickNotesBodyHtml: '' }; %>
+<% var d = typeof data !== 'undefined' && data ? data : { homeQuickNotesTitle: '', homeQuickNotesBodyHtml: '', activationPageTitle: '', activationPageIntroBodyHtml: '' }; %>
 <div class="container-fluid px-3 px-lg-4 py-3 w-100">
   <div class="mb-4">
-    <h1 class="h4 mb-1">Lưu ý nhanh — Trang chủ</h1>
-    <p class="text-body-secondary small mb-0">Một khối soạn thảo: in đậm, link, danh sách… Hiển thị cuối trang chủ.</p>
+    <h1 class="h4 mb-1">Nội dung công khai — Trang chủ &amp; kích hoạt</h1>
+    <p class="text-body-secondary small mb-0">Chỉnh khối “Lưu ý nhanh” ở cuối trang chủ và phần đầu trang kích hoạt bảo hành (tiêu đề + nội dung soạn thảo).</p>
   </div>
 
   <% if (typeof flash !== 'undefined' && flash === 'saved') { %>
@@ -18,12 +18,24 @@
         <input type="text" class="form-control" id="homeQuickNotesTitle" name="homeQuickNotesTitle" value="<%= d.homeQuickNotesTitle || '' %>" placeholder="Lưu ý nhanh" />
       </div>
 
-      <label class="form-label small fw-semibold" for="homeQuickNotesBodyHtml">Nội dung</label>
-      <textarea class="form-control js-tinymce-qnote-single" id="homeQuickNotesBodyHtml" name="homeQuickNotesBodyHtml" rows="16"><%- d.homeQuickNotesBodyHtml || '' %></textarea>
+      <label class="form-label small fw-semibold" for="homeQuickNotesBodyHtml">Nội dung — Lưu ý nhanh (trang chủ)</label>
+      <textarea class="form-control js-tinymce-public-block" id="homeQuickNotesBodyHtml" name="homeQuickNotesBodyHtml" rows="16"><%- d.homeQuickNotesBodyHtml || '' %></textarea>
+
+      <hr class="my-4" />
+
+      <h2 class="h6 fw-semibold mb-3">Đầu trang kích hoạt bảo hành</h2>
+      <p class="text-body-secondary small mb-3">Tiêu đề (H1) và khối mô tả trong vùng xanh lá — <a href="/bao-hanh/kich-hoat" target="_blank" rel="noopener noreferrer">/bao-hanh/kich-hoat</a>. Để trống nội dung soạn thảo khi lưu sẽ khôi phục bản mặc định.</p>
+      <div class="mb-3" style="max-width: 36rem;">
+        <label class="form-label small fw-semibold" for="activationPageTitle">Tiêu đề trang (H1)</label>
+        <input type="text" class="form-control" id="activationPageTitle" name="activationPageTitle" value="<%= d.activationPageTitle || '' %>" placeholder="Kích hoạt bảo hành" />
+      </div>
+      <label class="form-label small fw-semibold" for="activationPageIntroBodyHtml">Nội dung (dưới tiêu đề)</label>
+      <textarea class="form-control js-tinymce-public-block" id="activationPageIntroBodyHtml" name="activationPageIntroBodyHtml" rows="12"><%- d.activationPageIntroBodyHtml || '' %></textarea>
 
       <div class="mt-3">
         <button type="submit" class="btn btn-primary btn-sm px-4">Lưu</button>
         <a href="/" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem trang chủ</a>
+        <a href="/bao-hanh/kich-hoat" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem kích hoạt</a>
       </div>
     </div>
   </form>
@@ -35,7 +47,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (typeof tinymce === 'undefined') return;
     tinymce.init({
-      selector: 'textarea.js-tinymce-qnote-single',
+      selector: 'textarea.js-tinymce-public-block',
       base_url: base,
       suffix: '.min',
       promotion: false,

@@ -8,10 +8,12 @@ async function loadPublicSiteSettings(req, res, next) {
     const pack = await publicSiteSettingsService.getLayoutLocals();
     res.locals.supportFooter = pack.supportFooter;
     res.locals.homeQuickNotes = pack.homeQuickNotes;
+    res.locals.activationPageIntro = pack.activationPageIntro;
     next();
   } catch (e) {
     res.locals.supportFooter = { title: 'Cần hỗ trợ kích hoạt?', items: [] };
     res.locals.homeQuickNotes = { title: 'Lưu ý nhanh', bodyHtml: '' };
+    res.locals.activationPageIntro = publicSiteSettingsService.fallbackActivationPageIntro();
     next();
   }
 }

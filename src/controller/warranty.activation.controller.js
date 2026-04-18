@@ -23,13 +23,18 @@ async function loadActivationPageLists() {
   return { productTypes, serialGuideProductTypes };
 }
 
+function activationDocTitle(res) {
+  const h = res.locals && res.locals.activationPageIntro;
+  return h && h.title ? h.title : 'Kích hoạt bảo hành';
+}
+
 const warrantyActivationController = () => {
   return {
     page: async (req, res) => {
       const { productTypes, serialGuideProductTypes } = await loadActivationPageLists();
       res.render('warranty/activation', {
         layout: 'layouts/main',
-        title: 'Kích hoạt bảo hành',
+        title: activationDocTitle(res),
         tab: 'activate',
         productTypes,
         serialGuideProductTypes,
@@ -45,7 +50,7 @@ const warrantyActivationController = () => {
         await warrantyService.submitWarrantyActivationRequestPublic(req.body || {});
         return res.render('warranty/activation', {
           layout: 'layouts/main',
-          title: 'Kích hoạt bảo hành',
+          title: activationDocTitle(res),
           tab: 'activate',
           productTypes,
           serialGuideProductTypes,
@@ -57,7 +62,7 @@ const warrantyActivationController = () => {
         const body = req.body || {};
         return res.status(400).render('warranty/activation', {
           layout: 'layouts/main',
-          title: 'Kích hoạt bảo hành',
+          title: activationDocTitle(res),
           tab: 'activate',
           productTypes,
           serialGuideProductTypes,
@@ -77,7 +82,7 @@ const warrantyActivationController = () => {
 
     qrPage: async (req, res) => {
       const base = getPublicBaseUrl(req);
-      const targetUrl = `${base}/warranty/kich-hoat`;
+      const targetUrl = `${base}/bao-hanh/kich-hoat`;
       const qrDataUrl = await QRCode.toDataURL(targetUrl, {
         width: 320,
         margin: 2,
