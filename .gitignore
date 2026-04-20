@@ -34,3 +34,4 @@ coverage/
 
 # Ảnh upload loại SP (sinh khi chạy app — không cần đưa lên git)
 public/warranty-assets/product-types/*
+/dump

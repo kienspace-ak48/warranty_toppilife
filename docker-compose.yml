@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: warranty_toppilife
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+
