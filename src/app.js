@@ -12,6 +12,10 @@ const database = require('./configs/dbConnection');
 const registerRoutes = require('./routes/index');
 const { publicPath, viewsPath, layoutsPath } = require('./configs/myPath');
 const expressEjsLayouts = require('express-ejs-layouts');
+const { formatViDateTime, formatViDateOnly } = require('./utils/vnDateFormat');
+
+app.locals.formatViDateTime = formatViDateTime;
+app.locals.formatViDateOnly = formatViDateOnly;
 
 if (process.env.CORS_ORIGINS) {
   app.use(

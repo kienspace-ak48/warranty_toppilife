@@ -118,10 +118,10 @@
               <td><%= row.serialNumber ? row.serialNumber : '—' %></td>
               <td class="text-center small"><%= wpSegLab[row.customerSegment] || wpSegLab.retail %></td>
               <td class="text-center small"><%= wpStatLab[row.deviceStatus] || wpStatLab.in_warranty %></td>
-              <td class="text-center small"><%= pd && !isNaN(pd.getTime()) ? pd.toLocaleDateString('vi-VN') : '—' %></td>
+              <td class="text-center small"><%= pd && !isNaN(pd.getTime()) ? formatViDateOnly(pd) : '—' %></td>
               <td class="text-center small">
                 <% if (wd && !isNaN(wd.getTime())) { %>
-                  <span class="pt-bh-days"><%= wd.toLocaleDateString('vi-VN') %></span>
+                  <span class="pt-bh-days"><%= formatViDateOnly(wd) %></span>
                 <% } else { %>
                   —
                 <% } %>
@@ -324,6 +324,8 @@
   var titleEl = document.getElementById('warrantyProductModalLabel');
   var submitBtn = document.getElementById('wpModalSubmit');
   var logEntriesCache = [];
+  /** Hiển thị / điền form theo giờ VN (DB vẫn UTC). */
+  var VN_IANA = 'Asia/Ho_Chi_Minh';
 
   function getModalInstance() {
     if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
@@ -365,22 +367,26 @@
     if (!iso) return '';
     var d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, '0');
-    var day = String(d.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + day;
+    return d.toLocaleDateString('en-CA', { timeZone: VN_IANA });
   }
 
   function isoToDatetimeLocal(iso) {
     if (!iso) return '';
     var d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, '0');
-    var day = String(d.getDate()).padStart(2, '0');
-    var h = String(d.getHours()).padStart(2, '0');
-    var min = String(d.getMinutes()).padStart(2, '0');
-    return y + '-' + m + '-' + day + 'T' + h + ':' + min;
+    var parts = {};
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: VN_IANA,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(d).forEach(function (p) {
+      if (p.type !== 'literal') parts[p.type] = p.value;
+    });
+    return parts.year + '-' + parts.month + '-' + parts.day + 'T' + parts.hour + ':' + parts.minute;
   }
 
   var KIND_LAB = { sale: 'Bán / xuất', activation: 'Kích hoạt BH', admin: 'Ghi nhận' };
@@ -438,7 +444,7 @@
     inner.className = 'wp-log-timeline-inner';
     arr.forEach(function (log) {
       var d = log.at ? new Date(log.at) : null;
-      var dateLine = d && !isNaN(d.getTime()) ? d.toLocaleDateString('vi-VN') : '—';
+      var dateLine = d && !isNaN(d.getTime()) ? d.toLocaleDateString('vi-VN', { timeZone: VN_IANA }) : '—';
       var parts = splitLogTitleBody(log);
       var vis = log.visibleToCustomer !== false ? 'Hiện KH' : 'Chỉ nội bộ';
       var kind = KIND_LAB[log.kind] || log.kind || '';

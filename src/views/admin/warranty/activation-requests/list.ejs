@@ -67,7 +67,7 @@
             <tr data-id="<%= row._id %>">
               <td class="small text-body-secondary">
                 <% var cr = row.createdAt ? new Date(row.createdAt) : null; %>
-                <%= cr && !isNaN(cr.getTime()) ? cr.toLocaleString('vi-VN') : '—' %>
+                <%= cr && !isNaN(cr.getTime()) ? formatViDateTime(cr) : '—' %>
               </td>
               <td class="small"><%= ptName %></td>
               <td><code class="small"><%= row.orderCode %></code></td>

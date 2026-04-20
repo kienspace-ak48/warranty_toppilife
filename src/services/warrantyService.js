@@ -4,6 +4,11 @@ const slugify = require('slugify');
 const WarrantyProductType = require('../models/warranty-product-type.model');
 const WarrantyProduct = require('../models/warranty-product.model');
 const WarrantyActivationRequest = require('../models/warranty-activation-request.model');
+const {
+  formatViDateTime: formatViDateTimeVN,
+  formatViDateOnly: formatViDateOnlyVN,
+  parseAdminDateTimeInput,
+} = require('../utils/vnDateFormat');
 
 class WarrantyService {
   constructor() {
@@ -220,15 +225,11 @@ class WarrantyService {
   }
 
   formatViDateTime(d) {
-    const t = d instanceof Date ? d : new Date(d);
-    if (Number.isNaN(t.getTime())) return '';
-    return t.toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
+    return formatViDateTimeVN(d);
   }
 
   formatViDateOnly(d) {
-    const t = d instanceof Date ? d : new Date(d);
-    if (Number.isNaN(t.getTime())) return '';
-    return t.toLocaleDateString('vi-VN');
+    return formatViDateOnlyVN(d);
   }
 
   getWarrantyStartDate(row) {
@@ -687,8 +688,8 @@ class WarrantyService {
       err.code = 'LOG_AT_INVALID';
       throw err;
     }
-    const atDate = new Date(rawAt);
-    if (Number.isNaN(atDate.getTime())) {
+    const atDate = parseAdminDateTimeInput(rawAt);
+    if (!atDate) {
       const err = new Error('LOG_AT_INVALID');
       err.code = 'LOG_AT_INVALID';
       throw err;
