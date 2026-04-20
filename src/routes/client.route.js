@@ -6,12 +6,15 @@ const warrantyActivation = require('../controller/warranty.activation.controller
 const { warrantyLookupSearchLimiter } = require('../middlewares/warrantyLookupRateLimit');
 const { warrantyActivationSubmitLimiter } = require('../middlewares/warrantyActivationRateLimit');
 const { loadPublicSiteSettings } = require('../middlewares/publicSiteSettings');
+const publicSiteApi = require('../controller/publicSite.api.controller')();
 
 /** Chuyển vĩnh viễn từ /warranty/... (cũ) sang /bao-hanh/... (chuẩn SEO) */
 function redirectLegacyToBaoHanh(req, res) {
   const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
   res.redirect(301, req.path.replace(/^\/warranty\b/, '/bao-hanh') + qs);
 }
+
+router.get('/api/public/site-settings', publicSiteApi.siteSettingsJson);
 
 router.use(loadPublicSiteSettings);
 

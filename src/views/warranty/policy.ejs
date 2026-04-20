@@ -1,28 +1,83 @@
-<div class="mx-auto max-w-5xl">
+<% var polIframe = typeof policyPageIframeSrc !== 'undefined' && policyPageIframeSrc ? policyPageIframeSrc : 'https://www.toppilife.vn/iframe/bao-hanh'; %>
+<% var polIframeAttr = String(polIframe).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); %>
+<% var polOrigin = typeof policyPageIframeOrigin !== 'undefined' && policyPageIframeOrigin ? policyPageIframeOrigin : ''; %>
+<div class="w-full">
   <%- include('../partials/warranty-policy-subnav', { warrantySubTab: 'policy' }) %>
 
-
-  <section class="mb-8 mt-8 rounded-[20px] border border-dashed border-[#39B54A]/35 bg-slate-50 p-4 sm:p-6" aria-labelledby="policy-iframe-heading">
-    <h2 id="policy-iframe-heading" class="text-base font-bold text-slate-900 sm:text-lg">Trang bảo hành chính thức (toppilife.vn)</h2>
-    <p class="mt-1 text-sm text-slate-600">
-      Nhúng iframe bên dưới. Nếu khung trắng, máy chủ đích có thể chặn nhúng (<code class="rounded bg-white/80 px-1 text-xs">X-Frame-Options</code> / CSP) — hãy dùng
-      <a href="https://www.toppilife.vn/bao-hanh" class="font-medium text-[#39B54A] underline underline-offset-2" target="_blank" rel="noopener noreferrer">liên kết mở tab mới</a>.
-    </p>
-    <div class="relative mt-4 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-inner" style="min-height: 420px;">
+  <div class="-mx-4 w-[calc(100%+2rem)] sm:-mx-6 sm:w-[calc(100%+3rem)]">
+    <div class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-900/5">
       <iframe
-        title="Chính sách bảo hành — ToppiLife (toppilife.vn)"
-        src="https://www.toppilife.vn/bao-hanh"
-        class="block h-[min(85vh,720px)] w-full min-h-[420px] border-0"
+        id="policy-warranty-iframe"
+        title="Chính sách bảo hành — ToppiLife"
+        src="<%= polIframeAttr %>"
+        class="block w-full max-w-full border-0 align-top"
+        style="min-height: 70vh; height: 1680px;"
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
       ></iframe>
     </div>
-    <p class="mt-3 text-center text-sm">
-      <a href="https://www.toppilife.vn/bao-hanh" class="font-semibold text-[#39B54A] underline decoration-[#39B54A]/40 underline-offset-2" target="_blank" rel="noopener noreferrer">Mở toppilife.vn/bao-hanh trong tab mới</a>
-    </p>
-  </section>
+  </div>
 
-  <p class="mt-10 text-center sm:text-left">
+  <p class="mt-8 text-center sm:text-left">
     <a href="/" class="text-sm font-semibold text-[#39B54A] underline decoration-[#39B54A]/40 underline-offset-2 transition hover:opacity-90">← Về tra cứu bảo hành</a>
   </p>
 </div>
+<%# Trang nhúng (cùng origin URL iframe): postMessage({ height: document.documentElement.scrollHeight }) tới parent; có thể lắng nghe { type: 'warranty-embed-parent-ready' } để trả lời. %>
+<script>
+(function () {
+  var iframe = document.getElementById('policy-warranty-iframe');
+  if (!iframe) return;
+  var allowedOrigin = <%- JSON.stringify(polOrigin) %>;
+  var lockedByMessage = false;
+
+  function applyHeight(px) {
+    var n = Math.max(480, Math.ceil(px) + 20);
+    iframe.style.height = n + 'px';
+    iframe.style.minHeight = n + 'px';
+  }
+
+  /** Ước lượng vừa đủ (SPA không đo được từ parent); cap để tránh khung cao gấp vài lần nội dung ngắn */
+  function guessHeight() {
+    if (lockedByMessage) return;
+    var vh = window.innerHeight;
+    var px = Math.round(Math.min(1900, Math.max(920, vh * 1.75)));
+    applyHeight(px);
+  }
+
+  guessHeight();
+
+  window.addEventListener('resize', function () {
+    guessHeight();
+  });
+
+  iframe.addEventListener('load', function () {
+    guessHeight();
+    if (!allowedOrigin || !iframe.contentWindow) return;
+    function ping() {
+      try {
+        iframe.contentWindow.postMessage({ type: 'warranty-embed-parent-ready' }, allowedOrigin);
+      } catch (e) {}
+    }
+    ping();
+    setTimeout(ping, 600);
+    setTimeout(ping, 2000);
+  });
+
+  if (!allowedOrigin) return;
+
+  window.addEventListener('message', function (e) {
+    if (e.source !== iframe.contentWindow) return;
+    if (e.origin !== allowedOrigin) return;
+    var d = e.data;
+    var h = null;
+    if (typeof d === 'number' && isFinite(d)) h = d;
+    else if (d && typeof d === 'object') {
+      var v = d.height != null ? d.height : d.frameHeight != null ? d.frameHeight : d.h;
+      if (v != null) h = Number(v);
+    }
+    if (h == null || !isFinite(h) || h < 80) return;
+    lockedByMessage = true;
+    applyHeight(h);
+  });
+})();
+</script>

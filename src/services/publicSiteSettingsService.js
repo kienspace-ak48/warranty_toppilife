@@ -2,6 +2,9 @@ const PublicSiteSettings = require('../models/public-site-settings.model');
 
 const DEFAULT_KEY = 'default';
 
+/** URL iframe chính sách bảo hành khi admin chưa cấu hình */
+const DEFAULT_POLICY_IFRAME_SRC = 'https://www.toppilife.vn/iframe/bao-hanh';
+
 const DEFAULT_ACTIVATION_TITLE = 'Kích hoạt bảo hành';
 const DEFAULT_ACTIVATION_INTRO_LINE1 =
   'Lưu ý ở đầu: Dành cho khách mua trên sàn thương mại điện tử(Shopee, Tiktok) hoặc đại lý của ToppiLife: điền thông tin bên dưới. Hệ thống gửi yêu cầu về cửa hàng để xác nhận trước khi bảo hành có hiệu lực.';
@@ -82,6 +85,81 @@ function escAttr(s) {
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;');
+}
+
+/** Chỉ cho phép http(s); trả về chuỗi URL hợp lệ hoặc rỗng */
+function sanitizePolicyIframeSrc(raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+    return u.toString();
+  } catch {
+    return '';
+  }
+}
+
+function resolvedPolicyIframeSrc(doc) {
+  const cleaned = sanitizePolicyIframeSrc(doc && doc.policyPageIframeSrc);
+  return cleaned || DEFAULT_POLICY_IFRAME_SRC;
+}
+
+function originFromPolicySrc(src) {
+  try {
+    return new URL(src).origin;
+  } catch {
+    return '';
+  }
+}
+
+const DEFAULT_LOOKUP_HERO_BADGE = 'ToppiLife';
+const DEFAULT_LOOKUP_HERO_TITLE = 'KIỂM TRA THỜI HẠN BẢO HÀNH ĐIỆN TỬ';
+
+function defaultLookupHeroIntroHtml() {
+  return (
+    '<p>Nhập <strong class="font-semibold text-white">số điện thoại</strong> hoặc ' +
+    '<strong class="font-semibold text-white">mã serial / tem</strong> đã đăng ký để xem thông tin và nhật ký hiển thị cho khách hàng.</p>'
+  );
+}
+
+function defaultLookupHeroExtraHtml() {
+  return (
+    '<p>Không biết serial nằm ở đâu? Xem ảnh minh họa theo từng loại máy trên ' +
+    '<a href="/" class="font-semibold text-white underline decoration-white/40 underline-offset-2 transition hover:decoration-white">trang chủ</a> ' +
+    '(hướng dẫn tìm serial).</p>'
+  );
+}
+
+const DEFAULT_LOOKUP_FORM_CARD_TITLE = 'Tra cứu';
+const DEFAULT_LOOKUP_FORM_CARD_SUBTITLE = 'Một ô — nhập số điện thoại hoặc serial / mã tem đã đăng ký.';
+const DEFAULT_LOOKUP_FORM_FIELD_LABEL = 'Số điện thoại hoặc serial / mã tem';
+const DEFAULT_LOOKUP_FORM_PLACEHOLDER = 'VD: 0859123456 hoặc mã trên tem';
+const DEFAULT_LOOKUP_FORM_BUTTON_LABEL = 'Tra cứu';
+
+function defaultLookupFormFootnoteHtml() {
+  return (
+    '<p>Serial khớp chính xác; số điện thoại khớp theo dãy số (có thể nhập nhiều định dạng).</p>'
+  );
+}
+
+function lookupPageForLayout(doc) {
+  const d = doc || {};
+  const heroIntroRaw = String(d.lookupHeroIntroHtml ?? '').trim();
+  const heroExtraRaw = String(d.lookupHeroExtraHtml ?? '').trim();
+  const footRaw = String(d.lookupFormFootnoteHtml ?? '').trim();
+  return {
+    heroBadge: String(d.lookupHeroBadge ?? '').trim() || DEFAULT_LOOKUP_HERO_BADGE,
+    heroTitle: String(d.lookupHeroTitle ?? '').trim() || DEFAULT_LOOKUP_HERO_TITLE,
+    heroIntroHtml: sanitizeQuickNotesHtml(heroIntroRaw) || defaultLookupHeroIntroHtml(),
+    heroExtraHtml: sanitizeQuickNotesHtml(heroExtraRaw) || defaultLookupHeroExtraHtml(),
+    formCardTitle: String(d.lookupFormCardTitle ?? '').trim() || DEFAULT_LOOKUP_FORM_CARD_TITLE,
+    formCardSubtitle: String(d.lookupFormCardSubtitle ?? '').trim() || DEFAULT_LOOKUP_FORM_CARD_SUBTITLE,
+    formFieldLabel: String(d.lookupFormFieldLabel ?? '').trim() || DEFAULT_LOOKUP_FORM_FIELD_LABEL,
+    formPlaceholder: String(d.lookupFormPlaceholder ?? '').trim() || DEFAULT_LOOKUP_FORM_PLACEHOLDER,
+    formButtonLabel: String(d.lookupFormButtonLabel ?? '').trim() || DEFAULT_LOOKUP_FORM_BUTTON_LABEL,
+    formFootnoteHtml: sanitizeQuickNotesHtml(footRaw) || defaultLookupFormFootnoteHtml(),
+  };
 }
 
 function normalizeQuickLine(row, i) {
@@ -233,6 +311,10 @@ class PublicSiteSettingsService {
     };
   }
 
+  fallbackLookupPage() {
+    return lookupPageForLayout({});
+  }
+
   async getLayoutLocals() {
     const doc = await this.getOrCreateDoc();
     return {
@@ -245,6 +327,17 @@ class PublicSiteSettingsService {
         bodyHtml: ensureBodyHtml(doc),
       },
       activationPageIntro: activationPageHeroFromDoc(doc),
+      policyPageIframeSrc: resolvedPolicyIframeSrc(doc),
+      policyPageIframeOrigin: originFromPolicySrc(resolvedPolicyIframeSrc(doc)),
+      lookupPage: lookupPageForLayout(doc),
+    };
+  }
+
+  /** Dữ liệu công khai cho API / ứng dụng khách */
+  async getPublicJsonPayload() {
+    const doc = await this.getOrCreateDoc();
+    return {
+      policyPageIframeSrc: resolvedPolicyIframeSrc(doc),
     };
   }
 
@@ -261,6 +354,56 @@ class PublicSiteSettingsService {
     };
   }
 
+  async getForAdminLookupPageForm() {
+    const doc = await this.getOrCreateDoc();
+    const L = lookupPageForLayout(doc);
+    return {
+      lookupHeroBadge: String(doc.lookupHeroBadge ?? '').trim() || L.heroBadge,
+      lookupHeroTitle: String(doc.lookupHeroTitle ?? '').trim() || L.heroTitle,
+      lookupHeroIntroHtml: String(doc.lookupHeroIntroHtml ?? '').trim() || L.heroIntroHtml,
+      lookupHeroExtraHtml: String(doc.lookupHeroExtraHtml ?? '').trim() || L.heroExtraHtml,
+      lookupFormCardTitle: String(doc.lookupFormCardTitle ?? '').trim() || L.formCardTitle,
+      lookupFormCardSubtitle: String(doc.lookupFormCardSubtitle ?? '').trim() || L.formCardSubtitle,
+      lookupFormFieldLabel: String(doc.lookupFormFieldLabel ?? '').trim() || L.formFieldLabel,
+      lookupFormPlaceholder: String(doc.lookupFormPlaceholder ?? '').trim() || L.formPlaceholder,
+      lookupFormButtonLabel: String(doc.lookupFormButtonLabel ?? '').trim() || L.formButtonLabel,
+      lookupFormFootnoteHtml: String(doc.lookupFormFootnoteHtml ?? '').trim() || L.formFootnoteHtml,
+    };
+  }
+
+  async updateLookupPageFromAdminBody(body) {
+    const b = body || {};
+    const lookupHeroBadge = String(b.lookupHeroBadge ?? '').trim();
+    const lookupHeroTitle = String(b.lookupHeroTitle ?? '').trim();
+    const lookupHeroIntroHtml = sanitizeQuickNotesHtml(String(b.lookupHeroIntroHtml ?? ''));
+    const lookupHeroExtraHtml = sanitizeQuickNotesHtml(String(b.lookupHeroExtraHtml ?? ''));
+    const lookupFormCardTitle = String(b.lookupFormCardTitle ?? '').trim();
+    const lookupFormCardSubtitle = String(b.lookupFormCardSubtitle ?? '').trim();
+    const lookupFormFieldLabel = String(b.lookupFormFieldLabel ?? '').trim();
+    const lookupFormPlaceholder = String(b.lookupFormPlaceholder ?? '').trim();
+    const lookupFormButtonLabel = String(b.lookupFormButtonLabel ?? '').trim();
+    const lookupFormFootnoteHtml = sanitizeQuickNotesHtml(String(b.lookupFormFootnoteHtml ?? ''));
+
+    await PublicSiteSettings.findOneAndUpdate(
+      { key: DEFAULT_KEY },
+      {
+        $set: {
+          lookupHeroBadge,
+          lookupHeroTitle,
+          lookupHeroIntroHtml,
+          lookupHeroExtraHtml,
+          lookupFormCardTitle,
+          lookupFormCardSubtitle,
+          lookupFormFieldLabel,
+          lookupFormPlaceholder,
+          lookupFormButtonLabel,
+          lookupFormFootnoteHtml,
+        },
+      },
+      { upsert: true, new: true },
+    );
+  }
+
   async getForAdminQuickNotesForm() {
     const doc = await this.getOrCreateDoc();
     const hero = activationPageHeroFromDoc(doc);
@@ -269,6 +412,7 @@ class PublicSiteSettingsService {
       homeQuickNotesBodyHtml: ensureBodyHtml(doc),
       activationPageTitle: hero.title,
       activationPageIntroBodyHtml: ensureActivationIntroHtml(doc),
+      policyPageIframeSrc: String(doc.policyPageIframeSrc || '').trim(),
     };
   }
 
@@ -297,6 +441,9 @@ class PublicSiteSettingsService {
       String((body && body.activationPageTitle) || '').trim() || DEFAULT_ACTIVATION_TITLE;
     const actHtmlRaw = sanitizeQuickNotesHtml((body && body.activationPageIntroBodyHtml) || '');
     const activationPageIntroBodyHtml = actHtmlRaw || defaultActivationIntroHtml();
+    const policyPageIframeSrc = sanitizePolicyIframeSrc(
+      body && body.policyPageIframeSrc != null ? body.policyPageIframeSrc : '',
+    );
 
     await PublicSiteSettings.findOneAndUpdate(
       { key: DEFAULT_KEY },
@@ -306,6 +453,7 @@ class PublicSiteSettingsService {
           homeQuickNotesBodyHtml: bodyHtml,
           activationPageTitle,
           activationPageIntroBodyHtml,
+          policyPageIframeSrc,
         },
         $unset: {
           homeQuickNotesLines: '',
@@ -319,4 +467,6 @@ class PublicSiteSettingsService {
   }
 }
 
-module.exports = new PublicSiteSettingsService();
+const publicSiteSettingsService = new PublicSiteSettingsService();
+publicSiteSettingsService.DEFAULT_POLICY_IFRAME_SRC = DEFAULT_POLICY_IFRAME_SRC;
+module.exports = publicSiteSettingsService;

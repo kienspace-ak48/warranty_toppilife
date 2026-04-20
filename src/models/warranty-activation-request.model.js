@@ -26,6 +26,8 @@ const warrantyActivationRequestSchema = new mongoose.Schema(
       default: 'retail',
       index: true,
     },
+    /** Đã chỉnh phân loại từ danh sách yêu cầu lần đầu → khóa; hoặc sau duyệt/từ chối. Sửa tiếp qua trang sản phẩm. */
+    segmentLockedFromList: { type: Boolean, default: false, index: true },
     adminNote: { type: String, trim: true, default: '' },
     resolvedWarrantyProductId: {
       type: mongoose.Schema.Types.ObjectId,

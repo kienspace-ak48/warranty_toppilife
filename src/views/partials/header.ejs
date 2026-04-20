@@ -59,7 +59,7 @@
               Tài khoản
               <% } %>
             </div>
-            <form method="POST" action="<%= typeof ADMIN_LOGOUT_URL !== 'undefined' ? ADMIN_LOGOUT_URL : '/auth/normal/admin/logout' %>" class="px-3 pb-2">
+            <form method="POST" action="<%= typeof ADMIN_LOGOUT_URL !== 'undefined' ? ADMIN_LOGOUT_URL : '/auth/logout' %>" class="px-3 pb-2">
               <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
                 <svg class="icon">
                   <use xlink:href="/coreui/vendors/@coreui/icons/svg/free.svg#cil-account-logout"></use>

@@ -86,11 +86,16 @@
                     <% } %>
                   </div>
                   <% var segVal = row.customerSegment === 'dealer' ? 'dealer' : (row.customerSegment === 'agent' ? 'agent' : 'retail'); %>
-                  <select id="ar_seg_<%= row._id %>" class="form-select form-select-sm ar-segment" style="min-width: 10rem; max-width: 14rem;" data-id="<%= row._id %>" data-prev="<%= segVal %>">
+                  <% var segListLocked = row.status !== 'pending' || row.segmentLockedFromList === true; %>
+                  <% var segTitle = !segListLocked ? 'Chọn phân loại một lần; sau đó chỉ sửa qua Mở SP (khi đã duyệt).' : (row.status === 'approved' ? 'Đã khóa — sửa phân loại tại trang sản phẩm (Mở SP).' : (row.status === 'rejected' ? 'Đã khóa.' : 'Đã chọn phân loại — duyệt hoặc sau đó sửa qua Mở SP.')); %>
+                  <select id="ar_seg_<%= row._id %>" class="form-select form-select-sm ar-segment" style="min-width: 10rem; max-width: 14rem;" data-id="<%= row._id %>" data-prev="<%= segVal %>"<%= segListLocked ? ' disabled aria-disabled="true"' : '' %> title="<%= segTitle %>">
                     <option value="retail" <%= segVal === 'retail' ? 'selected' : '' %>>Khách lẻ</option>
                     <option value="dealer" <%= segVal === 'dealer' ? 'selected' : '' %>>Đại lý</option>
                     <option value="agent" <%= segVal === 'agent' ? 'selected' : '' %>>Cộng tác viên</option>
                   </select>
+                  <% if (segListLocked && row.status === 'pending') { %>
+                    <span class="small text-body-secondary">Đã chọn phân loại</span>
+                  <% } %>
                 </div>
               </td>
               <td class="text-end">
@@ -174,8 +179,9 @@
         });
     });
   });
-  document.querySelectorAll('select.ar-segment').forEach(function (sel) {
+  document.querySelectorAll('select.ar-segment:not([disabled])').forEach(function (sel) {
     sel.addEventListener('change', function () {
+      if (sel.disabled) return;
       var id = sel.getAttribute('data-id');
       var prev = sel.getAttribute('data-prev') || 'retail';
       var customerSegment = sel.value;
@@ -196,7 +202,7 @@
           });
         })
         .then(function () {
-          sel.setAttribute('data-prev', customerSegment);
+          reloadList();
         })
         .catch(function (e) {
           sel.value = prev;

@@ -47,6 +47,20 @@ const publicSiteSettingsSchema = new mongoose.Schema(
     activationPageTitle: { type: String, trim: true, default: '' },
     /** Khối HTML (TinyMCE) phần mô tả dưới tiêu đề */
     activationPageIntroBodyHtml: { type: String, default: '' },
+    /** URL nhúng iframe trang chính sách bảo hành (/bao-hanh/chinh-sach). Để trống dùng mặc định máy chủ. */
+    policyPageIframeSrc: { type: String, trim: true, default: '' },
+
+    /** Nội dung công khai — trang tra cứu /bao-hanh/tra-cuu */
+    lookupHeroBadge: { type: String, trim: true, default: '' },
+    lookupHeroTitle: { type: String, trim: true, default: '' },
+    lookupHeroIntroHtml: { type: String, default: '' },
+    lookupHeroExtraHtml: { type: String, default: '' },
+    lookupFormCardTitle: { type: String, trim: true, default: '' },
+    lookupFormCardSubtitle: { type: String, trim: true, default: '' },
+    lookupFormFieldLabel: { type: String, trim: true, default: '' },
+    lookupFormPlaceholder: { type: String, trim: true, default: '' },
+    lookupFormButtonLabel: { type: String, trim: true, default: '' },
+    lookupFormFootnoteHtml: { type: String, default: '' },
   },
   { timestamps: true },
 );

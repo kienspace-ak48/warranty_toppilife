@@ -1,0 +1,104 @@
+<% var d = typeof data !== 'undefined' && data ? data : {}; %>
+<div class="container-fluid px-3 px-lg-4 py-3 w-100">
+  <div class="mb-4">
+    <h1 class="h4 mb-1">Trang tra cứu bảo hành</h1>
+    <p class="text-body-secondary small mb-0">Áp dụng cho <a href="/bao-hanh/tra-cuu" target="_blank" rel="noopener noreferrer">/bao-hanh/tra-cuu</a>. Ô chữ ngắn: để trống khi lưu thì trên khách dùng lại chữ mặc định. Khối HTML (TinyMCE): xóa hết và lưu thì khách dùng lại bản mặc định.</p>
+  </div>
+
+  <% if (typeof flash !== 'undefined' && flash === 'saved') { %>
+    <div class="alert alert-success py-2 small mb-3" role="status">Đã lưu.</div>
+  <% } else if (typeof flash !== 'undefined' && flash && flash !== 'saved') { %>
+    <div class="alert alert-warning py-2 small mb-3" role="alert"><%= flash %></div>
+  <% } %>
+
+  <form method="post" action="/admin/page-settings/lookup-tra-cuu" class="card border-0 shadow-sm w-100" id="form-lookup-page">
+    <div class="card-body p-3 p-lg-4">
+      <h2 class="h6 fw-semibold mb-3">Vùng xanh (hero)</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold" for="lookupHeroBadge">Nhãn nhỏ (pill)</label>
+          <input type="text" class="form-control" id="lookupHeroBadge" name="lookupHeroBadge" value="<%= d.lookupHeroBadge || '' %>" placeholder="ToppiLife" maxlength="120" />
+        </div>
+        <div class="col-md-8">
+          <label class="form-label small fw-semibold" for="lookupHeroTitle">Tiêu đề chính (H1)</label>
+          <input type="text" class="form-control" id="lookupHeroTitle" name="lookupHeroTitle" value="<%= d.lookupHeroTitle || '' %>" placeholder="KIỂM TRA THỜI HẠN…" maxlength="300" />
+        </div>
+      </div>
+      <label class="form-label small fw-semibold mt-3" for="lookupHeroIntroHtml">Đoạn mô tả dưới H1 (HTML — chữ trắng trên nền xanh)</label>
+      <textarea class="form-control js-tinymce-lookup-block" id="lookupHeroIntroHtml" name="lookupHeroIntroHtml" rows="8"><%- d.lookupHeroIntroHtml || '' %></textarea>
+
+      <label class="form-label small fw-semibold mt-3" for="lookupHeroExtraHtml">Đoạn phụ (HTML — gợi ý serial / link trang chủ)</label>
+      <textarea class="form-control js-tinymce-lookup-block" id="lookupHeroExtraHtml" name="lookupHeroExtraHtml" rows="6"><%- d.lookupHeroExtraHtml || '' %></textarea>
+
+      <hr class="my-4" />
+
+      <h2 class="h6 fw-semibold mb-3">Khối form tra cứu</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold" for="lookupFormCardTitle">Tiêu đề khối (H2)</label>
+          <input type="text" class="form-control" id="lookupFormCardTitle" name="lookupFormCardTitle" value="<%= d.lookupFormCardTitle || '' %>" placeholder="Tra cứu" maxlength="120" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold" for="lookupFormButtonLabel">Chữ nút gửi</label>
+          <input type="text" class="form-control" id="lookupFormButtonLabel" name="lookupFormButtonLabel" value="<%= d.lookupFormButtonLabel || '' %>" placeholder="Tra cứu" maxlength="80" />
+        </div>
+      </div>
+      <label class="form-label small fw-semibold mt-3" for="lookupFormCardSubtitle">Dòng mô tả dưới H2</label>
+      <textarea class="form-control" id="lookupFormCardSubtitle" name="lookupFormCardSubtitle" rows="2" maxlength="500"><%= d.lookupFormCardSubtitle || '' %></textarea>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold" for="lookupFormFieldLabel">Nhãn ô nhập</label>
+          <input type="text" class="form-control" id="lookupFormFieldLabel" name="lookupFormFieldLabel" value="<%= d.lookupFormFieldLabel || '' %>" placeholder="Số điện thoại hoặc serial…" maxlength="200" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold" for="lookupFormPlaceholder">Placeholder ô nhập</label>
+          <input type="text" class="form-control" id="lookupFormPlaceholder" name="lookupFormPlaceholder" value="<%= d.lookupFormPlaceholder || '' %>" placeholder="VD: 0859…" maxlength="200" />
+        </div>
+      </div>
+
+      <label class="form-label small fw-semibold mt-3" for="lookupFormFootnoteHtml">Chú thích dưới form (HTML nhỏ, màu xám)</label>
+      <textarea class="form-control js-tinymce-lookup-block" id="lookupFormFootnoteHtml" name="lookupFormFootnoteHtml" rows="5"><%- d.lookupFormFootnoteHtml || '' %></textarea>
+
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary btn-sm px-4">Lưu</button>
+        <a href="/bao-hanh/tra-cuu" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem trang khách</a>
+      </div>
+    </div>
+  </form>
+</div>
+<script src="/libs/tinymce_8.4.0/js/tinymce/tinymce.min.js"></script>
+<script>
+(function () {
+  var base = '/libs/tinymce_8.4.0/js/tinymce';
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof tinymce === 'undefined') return;
+    tinymce.init({
+      selector: 'textarea.js-tinymce-lookup-block',
+      base_url: base,
+      suffix: '.min',
+      promotion: false,
+      branding: false,
+      license_key: 'gpl',
+      height: 280,
+      min_height: 200,
+      menubar: false,
+      plugins: 'lists link code',
+      toolbar: 'undo redo | blocks | bold italic underline strikethrough | link | bullist numlist | removeformat | code',
+      block_formats: 'Paragraph=p; Heading 3=h3',
+      content_style: 'body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; font-size: 14px; }',
+      setup: function (editor) {
+        editor.on('change keyup', function () {
+          editor.save();
+        });
+      },
+    });
+    var form = document.getElementById('form-lookup-page');
+    if (form) {
+      form.addEventListener('submit', function () {
+        if (typeof tinymce !== 'undefined') tinymce.triggerSave();
+      });
+    }
+  });
+})();
+</script>

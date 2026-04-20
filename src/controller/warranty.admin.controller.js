@@ -60,6 +60,9 @@ function activationRequestErr(e) {
   if (e.code === 'NOT_PENDING') return 'Yêu cầu đã được xử lý.';
   if (e.code === 'SERIAL_CONFLICT_ON_APPROVE') return 'Serial đã tồn tại trên hệ thống — không thể duyệt.';
   if (e.code === 'INVALID_SEGMENT') return 'Phân loại kênh không hợp lệ.';
+  if (e.code === 'SEGMENT_LOCKED_LIST') {
+    return 'Phân loại đã khóa trên danh sách — chỉnh tại trang sản phẩm (Mở SP) nếu đã duyệt.';
+  }
   return e.message || 'Lỗi';
 }
 

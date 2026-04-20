@@ -43,6 +43,27 @@ const publicSiteSettingsAdminController = () => {
         );
       }
     },
+
+    lookupPage: async (req, res) => {
+      const data = await publicSiteSettingsService.getForAdminLookupPageForm();
+      res.render('admin/page-settings/lookup-tra-cuu', {
+        layout: 'layouts/adminLayout',
+        title: 'Trang tra cứu bảo hành — Nội dung khách',
+        data,
+        flash: typeof req.query.flash === 'string' ? req.query.flash : '',
+      });
+    },
+
+    lookupPageSave: async (req, res) => {
+      try {
+        await publicSiteSettingsService.updateLookupPageFromAdminBody(req.body || {});
+        res.redirect('/admin/page-settings/lookup-tra-cuu?flash=saved');
+      } catch (e) {
+        res.redirect(
+          `/admin/page-settings/lookup-tra-cuu?flash=${encodeURIComponent(e.message || 'Lỗi lưu')}`,
+        );
+      }
+    },
   };
 };
 

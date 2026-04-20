@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:client-css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --minify",
-    "watch:client-css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --watch",
+    "build:css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --minify",
+    "watch:css": "tailwindcss -i ./src/styles/client.css -o ./public/css/client.css --watch",
     "dev": "nodemon --inspect src/server.js",
     "start": "node src/server.js"
   },
@@ -14,6 +14,7 @@
   "author": "KienVu",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -21,6 +22,7 @@
     "express": "^5.2.1",
     "express-ejs-layouts": "^2.5.1",
     "express-rate-limit": "^8.3.2",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
     "qrcode": "^1.5.4",

@@ -1,8 +1,8 @@
-<% var d = typeof data !== 'undefined' && data ? data : { homeQuickNotesTitle: '', homeQuickNotesBodyHtml: '', activationPageTitle: '', activationPageIntroBodyHtml: '' }; %>
+<% var d = typeof data !== 'undefined' && data ? data : { homeQuickNotesTitle: '', homeQuickNotesBodyHtml: '', activationPageTitle: '', activationPageIntroBodyHtml: '', policyPageIframeSrc: '' }; %>
 <div class="container-fluid px-3 px-lg-4 py-3 w-100">
   <div class="mb-4">
     <h1 class="h4 mb-1">Nội dung công khai — Trang chủ &amp; kích hoạt</h1>
-    <p class="text-body-secondary small mb-0">Chỉnh khối “Lưu ý nhanh” ở cuối trang chủ và phần đầu trang kích hoạt bảo hành (tiêu đề + nội dung soạn thảo).</p>
+    <p class="text-body-secondary small mb-0">Chỉnh khối “Lưu ý nhanh” ở cuối trang chủ, phần đầu trang kích hoạt bảo hành (tiêu đề + nội dung soạn thảo), và URL nhúng iframe trang chính sách bảo hành.</p>
   </div>
 
   <% if (typeof flash !== 'undefined' && flash === 'saved') { %>
@@ -32,10 +32,20 @@
       <label class="form-label small fw-semibold" for="activationPageIntroBodyHtml">Nội dung (dưới tiêu đề)</label>
       <textarea class="form-control js-tinymce-public-block" id="activationPageIntroBodyHtml" name="activationPageIntroBodyHtml" rows="12"><%- d.activationPageIntroBodyHtml || '' %></textarea>
 
+      <hr class="my-4" />
+
+      <h2 class="h6 fw-semibold mb-3">Trang chính sách bảo hành (<code class="small">/bao-hanh/chinh-sach</code>)</h2>
+      <p class="text-body-secondary small mb-3">URL dùng cho thẻ <code class="small">iframe</code> (ví dụ trang nhúng <code class="small">https://www.toppilife.vn/iframe/bao-hanh</code>). Để trống sẽ dùng URL mặc định trên máy chủ. API công khai: <code class="small">GET /api/public/site-settings</code> trả về trường <code class="small">policyPageIframeSrc</code>.</p>
+      <div class="mb-3" style="max-width: 42rem;">
+        <label class="form-label small fw-semibold" for="policyPageIframeSrc">Link iframe chính sách</label>
+        <input type="url" class="form-control" id="policyPageIframeSrc" name="policyPageIframeSrc" value="<%= d.policyPageIframeSrc || '' %>" placeholder="https://www.toppilife.vn/iframe/bao-hanh" autocomplete="off" />
+      </div>
+
       <div class="mt-3">
         <button type="submit" class="btn btn-primary btn-sm px-4">Lưu</button>
         <a href="/" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem trang chủ</a>
         <a href="/bao-hanh/kich-hoat" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem kích hoạt</a>
+        <a href="/bao-hanh/chinh-sach" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem chính sách</a>
       </div>
     </div>
   </form>

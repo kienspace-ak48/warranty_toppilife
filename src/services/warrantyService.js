@@ -1037,6 +1037,7 @@ class WarrantyService {
     reqDoc.reviewedAt = new Date();
     reqDoc.adminNote = '';
     reqDoc.resolvedWarrantyProductId = created._id;
+    reqDoc.segmentLockedFromList = true;
     await reqDoc.save();
     return { ok: true, warrantyProductId: created._id.toString() };
   }
@@ -1061,11 +1062,12 @@ class WarrantyService {
     reqDoc.status = 'rejected';
     reqDoc.reviewedAt = new Date();
     reqDoc.adminNote = note != null ? String(note).trim().slice(0, 2000) : '';
+    reqDoc.segmentLockedFromList = true;
     await reqDoc.save();
     return { ok: true };
   }
 
-  /** Cập nhật phân loại kênh trên yêu cầu; nếu đã duyệt có SP — đồng bộ sang sản phẩm bảo hành. */
+  /** Cập nhật phân loại kênh từ danh sách yêu cầu — chỉ khi còn pending và chưa khóa; một lần rồi khóa. Đã duyệt/từ chối → sửa qua SP. */
   async updateWarrantyActivationRequestSegmentAdmin(id, segmentRaw) {
     const allowed = new Set(['retail', 'dealer', 'agent']);
     const seg = segmentRaw != null ? String(segmentRaw).trim() : '';
@@ -1085,7 +1087,18 @@ class WarrantyService {
       err.code = 'NOT_FOUND';
       throw err;
     }
+    if (reqDoc.status !== 'pending') {
+      const err = new Error('SEGMENT_LOCKED_LIST');
+      err.code = 'SEGMENT_LOCKED_LIST';
+      throw err;
+    }
+    if (reqDoc.segmentLockedFromList) {
+      const err = new Error('SEGMENT_LOCKED_LIST');
+      err.code = 'SEGMENT_LOCKED_LIST';
+      throw err;
+    }
     reqDoc.customerSegment = seg;
+    reqDoc.segmentLockedFromList = true;
     await reqDoc.save();
     if (reqDoc.resolvedWarrantyProductId) {
       await WarrantyProduct.updateOne(

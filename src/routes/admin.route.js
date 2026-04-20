@@ -36,9 +36,9 @@ const uploadWarrantyExcel = multer({
 
 const router = express.Router();
 
-/** Link cũ /admin/login — chuyển thẳng vào trang loại SP (không còn đăng nhập). */
+/** Bookmark cũ /admin/login — đăng nhập thực tế tại /auth/login (middleware chặn /admin khi chưa có JWT). */
 router.get('/login', (req, res) => {
-  res.redirect('/admin/warranty/product-types');
+  res.redirect(302, '/auth/login');
 });
 
 router.get('/', warrantyAdmin.adminDashboard);
@@ -124,6 +124,8 @@ router.get('/page-settings/footer', publicSiteSettingsAdmin.footerPage);
 router.post('/page-settings/footer', publicSiteSettingsAdmin.footerSave);
 router.get('/page-settings/home-quick-notes', publicSiteSettingsAdmin.quickNotesPage);
 router.post('/page-settings/home-quick-notes', publicSiteSettingsAdmin.quickNotesSave);
+router.get('/page-settings/lookup-tra-cuu', publicSiteSettingsAdmin.lookupPage);
+router.post('/page-settings/lookup-tra-cuu', publicSiteSettingsAdmin.lookupPageSave);
 router.get('/page-settings/qr-kich-hoat', warrantyAdmin.qrToolPage);
 router.post('/page-settings/qr-kich-hoat', warrantyAdmin.qrToolGenerate);
 
