@@ -7,11 +7,12 @@ require('dotenv').config({
 const HTTP_PORT = process.env.HTTP_PORT || 3000;
 const httpServer = http.createServer(app);
 const dbConnection = require('./configs/dbConnection');
-
+const { bootstrapSuperAdminIfNeeded } = require('./utils/bootstrapSuperAdmin');
 
 async function startServer(){
     try{
         await dbConnection.connect();
+        await bootstrapSuperAdminIfNeeded();
         httpServer.listen(HTTP_PORT, () => {
             console.log(`📊 MongoDB readyState: ${dbConnection.getConnection().readyState}`);
             console.log(`🚀 Server is running on http://localhost:${HTTP_PORT}`);

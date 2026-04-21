@@ -2,7 +2,7 @@
 <div class="container-fluid px-3 px-lg-4 py-3 w-100">
   <div class="mb-4">
     <h1 class="h4 mb-1">Nội dung công khai — Trang chủ &amp; kích hoạt</h1>
-    <p class="text-body-secondary small mb-0">Chỉnh khối “Lưu ý nhanh” ở cuối trang chủ, phần đầu trang kích hoạt bảo hành (tiêu đề + nội dung soạn thảo), và URL nhúng iframe trang chính sách bảo hành.</p>
+    <p class="text-body-secondary small mb-0">Chỉnh khối “Lưu ý nhanh” ở cuối trang chủ, phần đầu trang kích hoạt bảo hành (tiêu đề + nội dung soạn thảo), và URL nhúng iframe chính sách bảo hành (hiển thị trên trang chủ).</p>
   </div>
 
   <% if (typeof flash !== 'undefined' && flash === 'saved') { %>
@@ -34,7 +34,7 @@
 
       <hr class="my-4" />
 
-      <h2 class="h6 fw-semibold mb-3">Trang chính sách bảo hành (<code class="small">/bao-hanh/chinh-sach</code>)</h2>
+      <h2 class="h6 fw-semibold mb-3">Iframe chính sách bảo hành (trang chủ <code class="small">/#chinh-sach-bao-hanh</code>)</h2>
       <p class="text-body-secondary small mb-3">URL dùng cho thẻ <code class="small">iframe</code> (ví dụ trang nhúng <code class="small">https://www.toppilife.vn/iframe/bao-hanh</code>). Để trống sẽ dùng URL mặc định trên máy chủ. API công khai: <code class="small">GET /api/public/site-settings</code> trả về trường <code class="small">policyPageIframeSrc</code>.</p>
       <div class="mb-3" style="max-width: 42rem;">
         <label class="form-label small fw-semibold" for="policyPageIframeSrc">Link iframe chính sách</label>
@@ -45,7 +45,7 @@
         <button type="submit" class="btn btn-primary btn-sm px-4">Lưu</button>
         <a href="/" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem trang chủ</a>
         <a href="/bao-hanh/kich-hoat" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem kích hoạt</a>
-        <a href="/bao-hanh/chinh-sach" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem chính sách</a>
+        <a href="/#chinh-sach-bao-hanh" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">Xem iframe chính sách</a>
       </div>
     </div>
   </form>

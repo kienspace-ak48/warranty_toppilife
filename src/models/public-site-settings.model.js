@@ -47,7 +47,7 @@ const publicSiteSettingsSchema = new mongoose.Schema(
     activationPageTitle: { type: String, trim: true, default: '' },
     /** Khối HTML (TinyMCE) phần mô tả dưới tiêu đề */
     activationPageIntroBodyHtml: { type: String, default: '' },
-    /** URL nhúng iframe trang chính sách bảo hành (/bao-hanh/chinh-sach). Để trống dùng mặc định máy chủ. */
+    /** URL nhúng iframe chính sách bảo hành (khối trên trang chủ #chinh-sach-bao-hanh). Để trống dùng mặc định máy chủ. */
     policyPageIframeSrc: { type: String, trim: true, default: '' },
 
     /** Nội dung công khai — trang tra cứu /bao-hanh/tra-cuu */

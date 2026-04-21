@@ -67,7 +67,7 @@ const DEFAULT_QUICK_LINES = [
     rest: '',
     prefix: 'Xem thêm ',
     linkText: 'chính sách bảo hành',
-    linkHref: '/bao-hanh/chinh-sach',
+    linkHref: '/#chinh-sach-bao-hanh',
     suffix: ' và điều kiện áp dụng.',
   },
 ];

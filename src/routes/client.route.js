@@ -24,12 +24,17 @@ router.get('/bao-hanh/tra-cuu', warrantyLookupSearchLimiter, warrantyLookup.page
 router.post('/bao-hanh/kich-hoat', warrantyActivationSubmitLimiter, warrantyActivation.submit);
 router.get('/bao-hanh/kich-hoat', warrantyActivation.page);
 router.get('/bao-hanh/ma-qr', warrantyActivation.qrPage);
-router.get('/bao-hanh/chinh-sach', warrantyActivation.policyPage);
+/** Chính sách nhúng trên trang chủ (anchor #chinh-sach-bao-hanh); URL cũ chuyển về đó. */
+router.get('/bao-hanh/chinh-sach', (req, res) => {
+  res.redirect(302, '/#chinh-sach-bao-hanh');
+});
 
 router.get('/warranty/tra-cuu', redirectLegacyToBaoHanh);
 router.get('/warranty/kich-hoat', redirectLegacyToBaoHanh);
 router.get('/warranty/ma-qr', redirectLegacyToBaoHanh);
-router.get('/warranty/chinh-sach', redirectLegacyToBaoHanh);
+router.get('/warranty/chinh-sach', (req, res) => {
+  res.redirect(301, '/#chinh-sach-bao-hanh');
+});
 router.post('/warranty/kich-hoat', warrantyActivationSubmitLimiter, warrantyActivation.submit);
 
 module.exports = router;

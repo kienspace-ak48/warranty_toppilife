@@ -97,14 +97,6 @@ const warrantyActivationController = () => {
         qrDataUrl,
       });
     },
-
-    policyPage: async (req, res) => {
-      res.render('warranty/policy', {
-        layout: 'layouts/main',
-        title: 'Chính sách bảo hành — ToppiLife',
-        tab: 'policy',
-      });
-    },
   };
 };
 

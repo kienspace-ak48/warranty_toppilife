@@ -2,6 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const warrantyAdmin = require('../controller/warranty.admin.controller')();
 const publicSiteSettingsAdmin = require('../controller/publicSiteSettings.admin.controller')();
+const accountsAdmin = require('../controller/accounts.admin.controller')();
+const requireSuperAdmin = require('../middlewares/requireSuperAdmin.middleware');
 
 const uploadProductTypeMemory = multer({
   storage: multer.memoryStorage(),
@@ -133,5 +135,12 @@ router.get('/warranty/public-footer', (req, res) => {
   res.redirect(302, '/admin/page-settings/footer');
 });
 router.post('/warranty/public-footer', publicSiteSettingsAdmin.footerSave);
+
+router.get('/system/accounts', requireSuperAdmin, accountsAdmin.list);
+router.get('/system/accounts/new', requireSuperAdmin, accountsAdmin.newForm);
+router.post('/system/accounts', requireSuperAdmin, accountsAdmin.create);
+router.get('/system/accounts/:id/edit', requireSuperAdmin, accountsAdmin.editForm);
+router.post('/system/accounts/:id', requireSuperAdmin, accountsAdmin.update);
+router.post('/system/accounts/:id/delete', requireSuperAdmin, accountsAdmin.delete);
 
 module.exports = router;

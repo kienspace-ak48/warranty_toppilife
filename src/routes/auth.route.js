@@ -58,15 +58,16 @@ router.get('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash('123@', salt);
     const user = new UserEntity({
       fullName: 'Toppilife Admin',
-      username: 'admin_test',
+      username: 'toppilife_warranty',
       password: hashedPassword,
-      email: 'admin@gmail.com',
-      role: 'admin',
+      email: 'toppilife.warranty@gmail.com',
+      role: 'super_admin',
       status: true,
     });
     const result = await user.save();
     return res.status(200).json({ message: 'User created successfully', data: { id: result._id, email: result.email } });
   } catch (error) {
+    console.error('Error creating user:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -106,7 +107,17 @@ router.post('/login', authLoginLimiter, async (req, res) => {
 
   let token;
   try {
-    token = jwt.sign({ userId: String(user._id), role: user.role }, secret, { expiresIn });
+    token = jwt.sign(
+      {
+        userId: String(user._id),
+        role: user.role,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+      },
+      secret,
+      { expiresIn },
+    );
   } catch {
     return res.status(500).render('page/login', {
       layout: false,

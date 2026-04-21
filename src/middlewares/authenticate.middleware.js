@@ -32,6 +32,14 @@ function authenticate(req, res, next) {
       return res.redirect('/auth/login');
     }
     req.user = decoded;
+    res.locals.user = {
+      id: decoded.userId,
+      role: decoded.role,
+      username: decoded.username || '',
+      email: decoded.email || '',
+      name: decoded.fullName || decoded.username || '',
+    };
+    res.locals.canAccessSystemAccounts = decoded.role === 'super_admin';
     next();
   } catch {
     return res.redirect('/auth/login');
